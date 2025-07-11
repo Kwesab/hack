@@ -58,6 +58,8 @@ import {
 } from "./routes/generate";
 import { testPhoneValidation, testOTPGeneration } from "./routes/test";
 
+import { db } from "./db/database";
+
 export function createServer() {
   const app = express();
 
