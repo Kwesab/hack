@@ -40,7 +40,7 @@ type RequestStep = "details" | "delivery" | "payment" | "confirmation";
 interface RequestData {
   type: "transcript" | "certificate" | "attestation";
   subType: string;
-  deliveryMethod: "digital" | "physical" | "both";
+  deliveryMethod: "digital" | "courier" | "cash_on_delivery";
   deliveryAddress: string;
   notes: string;
 }
@@ -457,39 +457,45 @@ export default function NewRequest() {
                     </div>
 
                     <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                      <RadioGroupItem value="physical" id="physical" />
+                      <RadioGroupItem value="courier" id="courier" />
                       <div className="flex-1">
-                        <Label htmlFor="physical" className="font-medium">
-                          Physical Only
+                        <Label htmlFor="courier" className="font-medium">
+                          Courier Delivery
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          Receive official hard copy by mail or pickup
+                          Receive official hard copy via courier service
                         </p>
                         <Badge className="mt-1 bg-info/10 text-info">
-                          Official Seal
+                          3-5 Business Days
                         </Badge>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                      <RadioGroupItem value="both" id="both" />
+                      <RadioGroupItem
+                        value="cash_on_delivery"
+                        id="cash_on_delivery"
+                      />
                       <div className="flex-1">
-                        <Label htmlFor="both" className="font-medium">
-                          Digital + Physical
+                        <Label
+                          htmlFor="cash_on_delivery"
+                          className="font-medium"
+                        >
+                          Cash on Delivery
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          Get digital copy immediately and physical copy by mail
+                          Pay when you receive your documents at your doorstep
                         </p>
                         <Badge className="mt-1 bg-ttu-gold/10 text-ttu-gold">
-                          Best of Both
+                          Pay on Receipt
                         </Badge>
                       </div>
                     </div>
                   </RadioGroup>
                 </div>
 
-                {(requestData.deliveryMethod === "physical" ||
-                  requestData.deliveryMethod === "both") && (
+                {(requestData.deliveryMethod === "courier" ||
+                  requestData.deliveryMethod === "cash_on_delivery") && (
                   <div className="space-y-4">
                     <Label htmlFor="address">Delivery Address</Label>
                     <Textarea
