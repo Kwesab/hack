@@ -246,6 +246,60 @@ export default function AdminDashboard() {
     }
   };
 
+  const generateDocument = async (requestId: string) => {
+    try {
+      setIsGenerating(requestId);
+
+      // Use admin endpoint to generate document with mock academic data but real user info
+      const response = await fetch(`/api/admin/generate/${requestId}`, {
+        method: "GET",
+        headers: {
+          "x-user-id": "admin_user", // Admin user ID
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP error! status: ${response.status}`);
+      }
+
+      // Create blob from response
+      const blob = await response.blob();
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Get request details for filename
+      const request = requests.find((r) => r.id === requestId);
+      const filename = `TTU_${request?.type || "document"}_${request?.user?.studentId || requestId}_${Date.now()}.pdf`;
+
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      toast({
+        title: "Success",
+        description:
+          "Document generated successfully with real user information",
+      });
+    } catch (error) {
+      console.error("Generate document error:", error);
+      toast({
+        title: "Error",
+        description: `Failed to generate document: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
   const filteredRequests = requests.filter((request) => {
     const matchesSearch =
       request.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
