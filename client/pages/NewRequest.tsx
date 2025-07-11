@@ -249,11 +249,13 @@ export default function NewRequest() {
         }, 1500);
       } else {
         // If automatic payment fails, show payment step
+        console.error("Paystack initialization failed:", result);
         setStep("payment");
         toast({
-          title: "Payment Required",
+          title: "Payment Initialization Failed",
           description:
-            "Please choose a payment method to complete your request",
+            result.message ||
+            "Please try again or choose another payment method",
           variant: "destructive",
         });
       }
