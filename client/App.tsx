@@ -53,6 +53,12 @@ const App = () => (
           <Route path="/payment/callback" element={<PaystackCallback />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/document-test" element={<DocumentTest />} />
+          <Route path="/diagrams" element={<Diagrams />} />
+          <Route path="/diagrams/usecase" element={<UseCaseDiagram />} />
+          <Route
+            path="/diagrams/architecture"
+            element={<ArchitectureDiagram />}
+          />
           <Route path="/enhanced-request" element={<EnhancedNewRequest />} />
           <Route path="/updated-login" element={<UpdatedLogin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
