@@ -157,10 +157,20 @@ export default function UpdatedLogin() {
         localStorage.setItem("userRole", userInfo.role);
 
         // Determine next step based on role
-        const nextRoute = userInfo.role === "admin" ? "/admin" : "/dashboard";
+        let nextRoute = "/dashboard";
+        let roleName = "student";
+
+        if (userInfo.role === "admin") {
+          nextRoute = "/admin";
+          roleName = "admin";
+        } else if (userInfo.role === "hod") {
+          nextRoute = "/hod";
+          roleName = "HOD";
+        }
+
         setNextStep({
           route: nextRoute,
-          message: `Redirecting to ${userInfo.role} dashboard...`,
+          message: `Redirecting to ${roleName} dashboard...`,
         });
 
         setStep("success");
