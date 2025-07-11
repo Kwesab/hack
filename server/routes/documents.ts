@@ -39,9 +39,13 @@ export const createRequest: RequestHandler = async (req, res) => {
     const user = await db.getUserById(userId);
     if (!user) {
       console.log("❌ User not found for ID:", userId);
-      return res.status(404).json({
+      console.log(
+        "💡 This usually means the user session is stale. User should log in again.",
+      );
+      return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: "Session expired. Please log in again.",
+        code: "SESSION_EXPIRED",
       });
     }
 
