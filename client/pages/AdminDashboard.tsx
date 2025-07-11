@@ -101,6 +101,7 @@ export default function AdminDashboard() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [newStatus, setNewStatus] = useState("");
+  const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
   const { toast } = useToast();
 
