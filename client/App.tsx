@@ -19,6 +19,7 @@ import NewLogin from "./pages/NewLogin";
 import UploadGhanaCard from "./pages/UploadGhanaCard";
 import PaymentCallback from "./pages/PaymentCallback";
 import EnhancedNewRequest from "./pages/EnhancedNewRequest";
+import UpdatedLogin from "./pages/UpdatedLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
