@@ -188,7 +188,7 @@ export const completeRegistration: RequestHandler = async (req, res) => {
   }
 };
 
-// Login with password
+// Login with password (also handles setting password for new users)
 export const login: RequestHandler = async (req, res) => {
   try {
     console.log("Login attempt with:", req.body);
@@ -222,19 +222,40 @@ export const login: RequestHandler = async (req, res) => {
       hasPassword: !!(user as any).password,
     });
 
-    // Check if user has a password set
+    // If user has no password set, set it now (new user completing registration)
     if (!(user as any).password) {
-      console.log(
-        "User has no password set - they need to complete registration",
-      );
-      return res.status(400).json({
-        success: false,
-        message: "Please complete your registration first",
-        requiresRegistration: true,
+      console.log("User has no password set - setting password now");
+
+      const updatedUser = db.updateUser(user.id, {
+        password,
+        name: user.name === "New User" ? "TTU Student" : user.name,
+      });
+
+      if (!updatedUser) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to complete registration",
+        });
+      }
+
+      console.log("Password set successfully - new user registration complete");
+
+      return res.json({
+        success: true,
+        message: "Registration completed successfully",
+        user: {
+          id: updatedUser.id,
+          phone: updatedUser.phone,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          studentId: updatedUser.studentId,
+          isVerified: updatedUser.isVerified,
+          ghanaCard: updatedUser.ghanaCard,
+        },
       });
     }
 
-    // In production, compare with hashed password
+    // User has password set - verify it
     if ((user as any).password !== password) {
       console.log("Password mismatch");
       return res.status(401).json({
