@@ -259,7 +259,7 @@ export const adminGenerateDocument: RequestHandler = async (req, res) => {
   try {
     const { requestId } = req.params;
 
-    // In real implementation, verify admin authentication here
+    // Verify admin authentication and role
     const adminUserId = req.headers["x-user-id"] as string;
     if (!adminUserId) {
       return res.status(401).json({
@@ -268,18 +268,46 @@ export const adminGenerateDocument: RequestHandler = async (req, res) => {
       });
     }
 
-    // Mock request and user data for admin generation
+    const adminUser = await db.getUserById(adminUserId);
+    if (!adminUser || adminUser.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin access required",
+      });
+    }
+
+    // Get the actual request from database
+    const allRequests = await db.getAllRequests();
+    const request = allRequests.find((req) => req.id === requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Document request not found",
+      });
+    }
+
+    // Get the student user details
+    const student = await db.getUserById(request.userId);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Prepare document data with actual student and request info
     const documentData = {
-      studentName: "John Doe",
-      studentId: "TTU/CS/2020/001",
-      documentType: "transcript",
-      subType: "undergraduate",
+      studentName: student.name,
+      studentId: student.studentId || "TTU/UNKNOWN/2024",
+      documentType: request.type,
+      subType: request.subType,
       graduationDate: "July 2024",
       degreeProgram: "Bachelor of Science in Computer Science",
       gpa: "3.55",
       classification: "Second Class Upper",
       issueDate: new Date().toLocaleDateString(),
-      requestId: requestId,
+      requestId: request.id,
     };
 
     try {
