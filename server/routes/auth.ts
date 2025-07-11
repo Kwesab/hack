@@ -22,6 +22,11 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+const credentialsSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
 // Send OTP
 export const sendOTP: RequestHandler = async (req, res) => {
   try {
