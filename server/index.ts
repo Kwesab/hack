@@ -9,6 +9,11 @@ import {
   getCurrentUser,
 } from "./routes/auth";
 import {
+  emailLogin,
+  verifyLoginOTP,
+  getCurrentAuthUser,
+} from "./routes/newAuth";
+import {
   createRequest,
   getUserRequests,
   getRequest,
