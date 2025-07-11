@@ -60,15 +60,8 @@ class SMSService {
     } catch (error) {
       console.error("SMS Service Error:", error);
 
-      // In development mode, fallback to success
-      if (process.env.NODE_ENV === "development") {
-        console.log("Development mode: SMS API failed, but returning success");
-        return {
-          success: true,
-          message: "SMS sent successfully (fallback mode)",
-          data: { messageId: `fallback_${Date.now()}` },
-        };
-      }
+      // Log the actual error for debugging
+      console.error("Real SMS API error:", error);
 
       return {
         success: false,
