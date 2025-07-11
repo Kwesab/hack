@@ -31,7 +31,7 @@ export const createRequest: RequestHandler = async (req, res) => {
       });
     }
 
-    const user = db.getUserById(userId);
+    const user = await db.getUserById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
