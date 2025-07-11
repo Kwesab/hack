@@ -22,6 +22,12 @@ import {
   getFile,
   verifyGhanaCard,
 } from "./routes/upload";
+import {
+  generateDocument,
+  generatePDF,
+  previewDocument,
+  getDocumentInfo,
+} from "./routes/generate";
 
 export function createServer() {
   const app = express();
