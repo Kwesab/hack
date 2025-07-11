@@ -34,11 +34,18 @@ class PaystackService {
   private baseUrl: string;
 
   constructor() {
-    // Use provided test key for development
+    // ⚠️ WARNING: Using LIVE secret key - this will process real payments!
     this.apiKey =
       process.env.PAYSTACK_SECRET_KEY ||
-      "sk_test_a5af00cdb6cdf05fd33bc916c0f740699bbb5d0a";
+      "sk_live_99e1351b4c69b9ffba5f262e81fa338809d94369";
     this.baseUrl = "https://api.paystack.co";
+
+    // Log warning for live key usage
+    if (this.apiKey.startsWith("sk_live_")) {
+      console.warn(
+        "⚠️ PAYSTACK WARNING: Using LIVE secret key - real payments will be processed!",
+      );
+    }
   }
 
   async initializePayment(
