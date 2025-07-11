@@ -18,23 +18,31 @@ const verifyPaymentSchema = z.object({
 // Initialize payment
 export const initializePayment: RequestHandler = async (req, res) => {
   try {
+    console.log("💳 INITIALIZE PAYMENT - Headers:", req.headers);
+    console.log("💳 INITIALIZE PAYMENT - Body:", req.body);
+
     const userId = req.headers["x-user-id"] as string;
 
     if (!userId) {
+      console.log("❌ No userId provided");
       return res.status(401).json({
         success: false,
         message: "Not authenticated",
       });
     }
 
+    console.log("🔍 Validating payment request:", req.body);
     const validation = initializePaymentSchema.safeParse(req.body);
     if (!validation.success) {
+      console.error("❌ Validation failed:", validation.error);
       return res.status(400).json({
         success: false,
         message: "Invalid request data",
         errors: validation.error.errors,
       });
     }
+
+    console.log("✅ Validation successful:", validation.data);
 
     const { requestId, paymentMethod } = validation.data;
 
