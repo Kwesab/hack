@@ -152,8 +152,17 @@ export const initializePayment: RequestHandler = async (req, res) => {
 // Verify payment
 export const verifyPayment: RequestHandler = async (req, res) => {
   try {
-    const validation = verifyPaymentSchema.safeParse(req.body);
+    console.log("💳 VERIFY PAYMENT - Headers:", req.headers);
+    console.log("💳 VERIFY PAYMENT - Body:", req.body);
+
+    // For Paystack callback, we might only have reference, not requestId
+    const referenceOnly = z.object({
+      reference: z.string().min(1, "Payment reference is required"),
+    });
+
+    const validation = referenceOnly.safeParse(req.body);
     if (!validation.success) {
+      console.error("❌ Validation failed:", validation.error);
       return res.status(400).json({
         success: false,
         message: "Invalid request data",
@@ -161,7 +170,8 @@ export const verifyPayment: RequestHandler = async (req, res) => {
       });
     }
 
-    const { reference, requestId } = validation.data;
+    const { reference } = validation.data;
+    console.log("🔍 Verifying payment reference:", reference);
 
     try {
       // Verify payment with Paystack
