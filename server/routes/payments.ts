@@ -89,22 +89,26 @@ export const initializePayment: RequestHandler = async (req, res) => {
       const reference = paystackService.generatePaymentReference("TTU");
 
       try {
+        console.log("🔄 Initializing Paystack payment...");
         // Initialize Paystack payment
         const paymentData = await paystackService.initializePayment(
           user.email,
-          mockRequest.amount,
+          request.amount,
           reference,
           `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/callback`,
         );
 
+        console.log("✅ Paystack payment initialized:", paymentData);
+
         return res.json({
           success: true,
           message: "Payment initialized successfully",
+          authorization_url: paymentData.data.authorization_url,
           data: {
             authorization_url: paymentData.data.authorization_url,
             access_code: paymentData.data.access_code,
             reference: paymentData.data.reference,
-            amount: mockRequest.amount,
+            amount: request.amount,
           },
         });
       } catch (error) {
