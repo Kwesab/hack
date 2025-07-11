@@ -76,6 +76,9 @@ export function createServer() {
 
   // Admin routes
   app.get("/api/admin/requests", getAllRequests);
+  app.get("/api/admin/pending-verifications", getPendingGhanaCardVerifications);
+  app.get("/api/admin/users", getAllUsers);
+  app.get("/api/admin/stats", getAdminStats);
 
   // Upload routes
   app.post("/api/upload/ghana-card", uploadGhanaCard);
