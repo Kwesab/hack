@@ -176,7 +176,7 @@ class DatabaseService {
           [
             `admin_${Date.now()}`,
             "admin@ttu.edu.gh",
-            "233501111111",
+            "",
             "Admin User",
             "admin123",
             "admin",
@@ -193,7 +193,7 @@ class DatabaseService {
           [
             `student_${Date.now()}`,
             "john.doe@student.ttu.edu.gh",
-            "233501234567",
+            "",
             "John Doe",
             "student123",
             "student",
@@ -216,7 +216,7 @@ class DatabaseService {
           [
             `student_pending_${Date.now()}`,
             "test.student@student.ttu.edu.gh",
-            "233503456789",
+            "",
             "Test Student",
             "student123",
             "student",
@@ -242,7 +242,7 @@ class DatabaseService {
     const adminUser: User = {
       id: `admin_${Date.now()}`,
       email: "admin@ttu.edu.gh",
-      phone: "233501111111",
+      phone: "",
       name: "Admin User",
       password: "admin123",
       role: "admin",
@@ -255,7 +255,7 @@ class DatabaseService {
     const seniorAdmin: User = {
       id: `admin_senior_${Date.now()}`,
       email: "senior.admin@ttu.edu.gh",
-      phone: "233501111122",
+      phone: "",
       name: "Senior Admin",
       password: "admin123",
       role: "admin",
@@ -268,7 +268,7 @@ class DatabaseService {
     const studentUser: User = {
       id: `student_${Date.now()}`,
       email: "john.doe@student.ttu.edu.gh",
-      phone: "233501234567",
+      phone: "",
       name: "John Doe",
       password: "student123",
       role: "student",
@@ -287,7 +287,7 @@ class DatabaseService {
     const testStudent: User = {
       id: `student_pending_${Date.now()}`,
       email: "test.student@student.ttu.edu.gh",
-      phone: "233503456789",
+      phone: "",
       name: "Test Student",
       password: "student123",
       role: "student",
@@ -306,7 +306,7 @@ class DatabaseService {
     const newStudent: User = {
       id: `student_new_${Date.now()}`,
       email: "jane.smith@student.ttu.edu.gh",
-      phone: "233502345678",
+      phone: "",
       name: "Jane Smith",
       password: "student123",
       role: "student",
@@ -321,7 +321,7 @@ class DatabaseService {
       {
         id: `student_cs_${Date.now()}_1`,
         email: "michael.asante@student.ttu.edu.gh",
-        phone: "233504567890",
+        phone: "",
         name: "Michael Asante",
         password: "student123",
         role: "student" as const,
@@ -337,7 +337,7 @@ class DatabaseService {
       {
         id: `student_ee_${Date.now()}_2`,
         email: "sarah.mensah@student.ttu.edu.gh",
-        phone: "233505678901",
+        phone: "",
         name: "Sarah Mensah",
         password: "student123",
         role: "student" as const,
@@ -353,7 +353,7 @@ class DatabaseService {
       {
         id: `student_me_${Date.now()}_3`,
         email: "kwame.osei@student.ttu.edu.gh",
-        phone: "233506789012",
+        phone: "",
         name: "Kwame Osei",
         password: "student123",
         role: "student" as const,
