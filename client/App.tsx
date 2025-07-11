@@ -32,7 +32,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<UpdatedLogin />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/new-request" element={<NewRequest />} />
           <Route path="/upload-documents" element={<UploadDocuments />} />
