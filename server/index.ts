@@ -71,6 +71,7 @@ export function createServer() {
   app.get("/api/demo", handleDemo);
 
   // Authentication routes
+  app.post("/api/auth/verify-credentials", verifyCredentials);
   app.post("/api/auth/send-otp", sendOTP);
   app.post("/api/auth/verify-otp", verifyOTP);
   app.post("/api/auth/complete-registration", completeRegistration);
