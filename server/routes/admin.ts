@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { db } from "../models";
+import { db } from "../db/database";
 
 // Get all users with pending Ghana Card verifications
 export const getPendingGhanaCardVerifications: RequestHandler = async (
