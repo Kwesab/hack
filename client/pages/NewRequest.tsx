@@ -191,8 +191,8 @@ export default function NewRequest() {
     } catch (error) {
       console.error("Submit request error:", error);
 
-      // Check if this is a 404 error which likely means session expired
-      if (error.message.includes("404")) {
+      // Check if this is a 401 or 404 error which likely means session expired
+      if (error.message.includes("401") || error.message.includes("404")) {
         toast({
           title: "Session Expired",
           description: "Your session has expired. Please log in again.",
