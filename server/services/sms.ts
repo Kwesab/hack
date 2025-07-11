@@ -16,7 +16,7 @@ class SMSService {
   constructor() {
     this.apiKey =
       process.env.SMS_API_KEY || "ea37f9e4-c06a-488d-878a-8615178ff888";
-    this.baseUrl = "http://sms.smsnotifygh.com";
+    this.baseUrl = "https://sms.smsnotifygh.com";
   }
 
   async sendSMS({ to, message }: SendSMSParams): Promise<SMSResponse> {
