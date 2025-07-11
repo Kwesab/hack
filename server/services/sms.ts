@@ -16,7 +16,7 @@ class SMSService {
   constructor() {
     this.apiKey =
       process.env.SMS_API_KEY || "ea37f9e4-c06a-488d-878a-8615178ff888";
-    this.baseUrl = "https://app.smsnotifygh.com/api";
+    this.baseUrl = "http://sms.smsnotifygh.com";
   }
 
   async sendSMS({ to, message }: SendSMSParams): Promise<SMSResponse> {
@@ -30,31 +30,51 @@ class SMSService {
       // Force real SMS sending even in development
       console.log("Sending real SMS via smsnotifygh API...");
 
-      const response = await fetch(`${this.baseUrl}/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          recipient: formattedPhone,
-          message: message,
-          sender: "TTU Portal",
-        }),
+      // Build URL with query parameters for smsnotifygh API
+      const params = new URLSearchParams({
+        key: this.apiKey,
+        to: formattedPhone,
+        msg: message,
+        sender_id: "TTU Portal",
       });
 
-      const data = await response.json();
+      const url = `${this.baseUrl}/smsapi?${params.toString()}`;
+      console.log(`SMS API URL: ${url}`);
 
-      if (response.ok) {
+      const response = await fetch(url, {
+        method: "GET",
+      });
+
+      const responseText = await response.text();
+      console.log(`SMS API Response: ${responseText}`);
+
+      // Parse smsnotifygh response codes
+      const responseCode = responseText.trim();
+
+      if (responseCode === "1000") {
         return {
           success: true,
           message: "SMS sent successfully",
-          data: data,
+          data: { messageId: responseCode },
         };
       } else {
+        const errorMessages = {
+          "1002": "SMS sending failed",
+          "1003": "Insufficient balance",
+          "1004": "Invalid API key",
+          "1005": "Invalid phone number",
+          "1006": "Invalid sender ID",
+          "1007": "Message scheduled for later delivery",
+          "1008": "Empty message",
+        };
+
+        const errorMessage =
+          errorMessages[responseCode as keyof typeof errorMessages] ||
+          `Unknown error (${responseCode})`;
+
         return {
           success: false,
-          message: data.message || "Failed to send SMS",
+          message: errorMessage,
         };
       }
     } catch (error) {
