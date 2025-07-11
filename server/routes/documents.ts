@@ -308,6 +308,73 @@ export const processPayment: RequestHandler = async (req, res) => {
   }
 };
 
+// Get requests by department (for HODs)
+export const getDepartmentRequests: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"] as string;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
+    const user = await db.getUserById(userId);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please log in again.",
+      });
+    }
+
+    // Check if user is HOD
+    if (user.role !== "hod") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. HOD role required.",
+      });
+    }
+
+    if (!user.department) {
+      return res.status(400).json({
+        success: false,
+        message: "Department not assigned to HOD",
+      });
+    }
+
+    // Get all requests for the HOD's department
+    const departmentRequests = await db.getRequestsByDepartment(
+      user.department,
+    );
+
+    // Enrich requests with user information
+    const enrichedRequests = await Promise.all(
+      departmentRequests.map(async (request) => {
+        const requestUser = await db.getUserById(request.userId);
+        return {
+          ...request,
+          userName: requestUser?.name,
+          userEmail: requestUser?.email,
+          userPhone: requestUser?.phone,
+        };
+      }),
+    );
+
+    res.json({
+      success: true,
+      requests: enrichedRequests,
+      department: user.department,
+    });
+  } catch (error) {
+    console.error("❌ GET DEPARTMENT REQUESTS ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 // Get all requests (admin only)
 export const getAllRequests: RequestHandler = async (req, res) => {
   try {
