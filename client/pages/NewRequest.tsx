@@ -269,6 +269,10 @@ export default function NewRequest() {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
       if (result.success && result.authorization_url) {
@@ -291,11 +295,19 @@ export default function NewRequest() {
       }
     } catch (error) {
       console.error("Payment initialization error:", error);
-      toast({
-        title: "Payment Error",
-        description: "Failed to initialize payment. Please try again.",
-        variant: "destructive",
-      });
+      if (error.message.includes("HTTP error")) {
+        toast({
+          title: "Payment Error",
+          description: "Server error. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Payment Error",
+          description: "Network error. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
