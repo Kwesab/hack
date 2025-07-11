@@ -37,6 +37,8 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/test-otp" element={<TestOTP />} />
           <Route path="/api-test" element={<ApiTest />} />
+          <Route path="/new-login" element={<NewLogin />} />
+          <Route path="/upload-ghana-card" element={<UploadGhanaCard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
