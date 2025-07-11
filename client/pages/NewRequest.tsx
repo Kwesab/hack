@@ -190,11 +190,27 @@ export default function NewRequest() {
       }
     } catch (error) {
       console.error("Submit request error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit request. Please try again.",
-        variant: "destructive",
-      });
+
+      // Check if this is a 404 error which likely means session expired
+      if (error.message.includes("404")) {
+        toast({
+          title: "Session Expired",
+          description: "Your session has expired. Please log in again.",
+          variant: "destructive",
+        });
+
+        // Clear localStorage and redirect to login after a short delay
+        setTimeout(() => {
+          localStorage.clear();
+          navigate("/login");
+        }, 2000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit request. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
