@@ -91,9 +91,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-4 w-4" />
-            </Button>
+            <NotificationCenter />
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />
             </Button>
