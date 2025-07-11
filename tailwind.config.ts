@@ -74,8 +74,18 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: [
+          "Bricolage Grotesque",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        display: [
+          "Bricolage Grotesque",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       boxShadow: {
         "elevation-1":
