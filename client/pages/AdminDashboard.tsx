@@ -123,39 +123,21 @@ export default function AdminDashboard() {
         setRequests(requestsResult.requests);
       }
 
-      // Simulate fetching users with pending Ghana Card verifications
-      const mockPendingUsers: User[] = [
-        {
-          id: "user_1",
-          name: "John Doe",
-          phone: "233501234567",
-          email: "john.doe@student.ttu.edu.gh",
-          studentId: "TTU/CS/2020/001",
-          isVerified: false,
-          ghanaCard: {
-            number: "GHA-123456789-0",
-            imageUrl: "/uploads/ghana-card-1.jpg",
-            verified: false,
-          },
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: "user_2",
-          name: "Jane Smith",
-          phone: "233241234567",
-          email: "jane.smith@student.ttu.edu.gh",
-          studentId: "TTU/EE/2021/045",
-          isVerified: false,
-          ghanaCard: {
-            number: "GHA-987654321-1",
-            imageUrl: "/uploads/ghana-card-2.jpg",
-            verified: false,
-          },
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-        },
-      ];
+      // Fetch real pending Ghana Card verifications
+      const verificationResponse = await fetch(
+        "/api/admin/pending-verifications",
+      );
+      const verificationResult = await verificationResponse.json();
 
-      setPendingVerifications(mockPendingUsers);
+      if (verificationResult.success) {
+        setPendingVerifications(verificationResult.data);
+      } else {
+        console.error(
+          "Failed to fetch pending verifications:",
+          verificationResult.message,
+        );
+        setPendingVerifications([]);
+      }
     } catch (error) {
       console.error("Failed to fetch data:", error);
       toast({
