@@ -57,6 +57,31 @@ export default function TrackRequests() {
     fetchRequests();
   }, []);
 
+  const handleDownload = async (requestId: string) => {
+    try {
+      toast({
+        title: "Downloading Document",
+        description: "Your document is being prepared for download...",
+      });
+
+      // Open the document in a new tab for download
+      const downloadUrl = `/api/generate/document/${requestId}`;
+      window.open(downloadUrl, "_blank");
+
+      toast({
+        title: "Download Started",
+        description: "Your document should start downloading shortly",
+      });
+    } catch (error) {
+      console.error("Download error:", error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download document. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     let filtered = requests;
 
