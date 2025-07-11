@@ -34,9 +34,10 @@ class PaystackService {
   private baseUrl: string;
 
   constructor() {
-    // Use test key for development
+    // Use provided test key for development
     this.apiKey =
-      process.env.PAYSTACK_SECRET_KEY || "sk_test_your_test_secret_key_here";
+      process.env.PAYSTACK_SECRET_KEY ||
+      "sk_test_a5af00cdb6cdf05fd33bc916c0f740699bbb5d0a";
     this.baseUrl = "https://api.paystack.co";
   }
 
