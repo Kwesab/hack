@@ -126,37 +126,57 @@ export const verifyOTP: RequestHandler = async (req, res) => {
 // Complete registration (set password and name)
 export const completeRegistration: RequestHandler = async (req, res) => {
   try {
+    console.log("Complete registration request:", req.body);
+
     const { phone, password, name, email, studentId } = req.body;
+
+    if (!phone || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone and password are required",
+      });
+    }
 
     const user = db.getUserByPhone(phone);
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found. Please verify your phone number first.",
       });
     }
 
+    console.log(`Completing registration for user ${user.id}`);
+
     // In production, hash the password
     const updatedUser = db.updateUser(user.id, {
-      name,
-      email,
-      studentId,
+      name: name || "TTU Student",
+      email: email || "",
+      studentId: studentId || "",
       // Store hashed password in production
       password,
     });
+
+    if (!updatedUser) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update user",
+      });
+    }
+
+    console.log("Registration completed successfully");
 
     res.json({
       success: true,
       message: "Registration completed successfully",
       user: {
-        id: updatedUser!.id,
-        phone: updatedUser!.phone,
-        name: updatedUser!.name,
-        email: updatedUser!.email,
-        studentId: updatedUser!.studentId,
-        isVerified: updatedUser!.isVerified,
-        ghanaCard: updatedUser!.ghanaCard,
+        id: updatedUser.id,
+        phone: updatedUser.phone,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        studentId: updatedUser.studentId,
+        isVerified: updatedUser.isVerified,
+        ghanaCard: updatedUser.ghanaCard,
       },
     });
   } catch (error) {
