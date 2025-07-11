@@ -6,6 +6,7 @@ import { db } from "../db/database";
 // Validation schemas
 const initializePaymentSchema = z.object({
   requestId: z.string().min(1, "Request ID is required"),
+  amount: z.number().positive("Amount must be positive").optional(),
   paymentMethod: z.enum(["paystack", "cash_on_delivery"]),
 });
 
