@@ -63,6 +63,17 @@ export function createServer() {
   app.use(express.json({ limit: "10mb" })); // Increase limit for file uploads
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+  // Request debugging middleware
+  app.use((req, res, next) => {
+    console.log(
+      `📊 ${req.method} ${req.path} - Headers:`,
+      req.headers["x-user-id"]
+        ? "userId: " + req.headers["x-user-id"]
+        : "no userId",
+    );
+    next();
+  });
+
   // Example API routes
   app.get("/api/ping", (_req, res) => {
     res.json({ message: "TTU DocPortal API v1.0" });
