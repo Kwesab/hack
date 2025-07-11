@@ -31,6 +31,7 @@ import {
   adminGenerateDocument,
   getDocumentTypes,
 } from "./routes/documentGeneration";
+import { debugUsers, debugUser } from "./routes/debug";
 import {
   createRequest,
   getUserRequests,
