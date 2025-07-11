@@ -177,11 +177,14 @@ export default function NewRequest() {
 
       if (result.success) {
         setCreatedRequest(result.request);
-        setStep("confirmation");
+
         toast({
           title: "Request Submitted",
-          description: "Your document request has been submitted successfully",
+          description: "Redirecting to payment...",
         });
+
+        // Automatically redirect to payment after successful request submission
+        await handleAutomaticPayment(result.request);
       } else {
         throw new Error(result.message);
       }
