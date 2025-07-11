@@ -18,6 +18,7 @@ import ApiTest from "./pages/ApiTest";
 import NewLogin from "./pages/NewLogin";
 import UploadGhanaCard from "./pages/UploadGhanaCard";
 import PaymentCallback from "./pages/PaymentCallback";
+import PaystackCallback from "./pages/PaystackCallback";
 import EnhancedNewRequest from "./pages/EnhancedNewRequest";
 import UpdatedLogin from "./pages/UpdatedLogin";
 import NotFound from "./pages/NotFound";
