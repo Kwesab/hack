@@ -76,7 +76,7 @@ export const initializePayment: RequestHandler = async (req, res) => {
       });
     }
 
-    console.log("�� Request found:", request.id, request.type, request.amount);
+    console.log("✅ Request found:", request.id, request.type, request.amount);
 
     if (paymentMethod === "cash_on_delivery") {
       // For cash on delivery, mark as pending payment
@@ -90,7 +90,12 @@ export const initializePayment: RequestHandler = async (req, res) => {
       });
     }
 
-    if (paymentMethod === "paystack") {
+    // All other payment methods (paystack, card, mobile_money, bank_transfer) use Paystack
+    if (
+      ["paystack", "card", "mobile_money", "bank_transfer"].includes(
+        paymentMethod,
+      )
+    ) {
       // Generate payment reference
       const reference = paystackService.generatePaymentReference("TTU");
 
