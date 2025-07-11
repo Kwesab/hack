@@ -38,7 +38,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-type RequestStep = "details" | "delivery" | "review" | "confirmation";
+type RequestStep = "details" | "delivery" | "payment" | "confirmation";
 
 interface RequestData {
   type: "transcript" | "certificate" | "attestation";
@@ -51,6 +51,7 @@ interface RequestData {
 export default function NewRequest() {
   const [step, setStep] = useState<RequestStep>("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [requestData, setRequestData] = useState<RequestData>({
     type: "transcript",
     subType: "",
@@ -58,6 +59,7 @@ export default function NewRequest() {
     deliveryAddress: "",
     notes: "",
   });
+  const [paymentReference, setPaymentReference] = useState<string>("");
   const [createdRequest, setCreatedRequest] = useState<any>(null);
 
   const navigate = useNavigate();
@@ -157,7 +159,7 @@ export default function NewRequest() {
     const steps: RequestStep[] = [
       "details",
       "delivery",
-      "review",
+      "payment",
       "confirmation",
     ];
     const currentIndex = steps.indexOf(step);
@@ -170,12 +172,114 @@ export default function NewRequest() {
     const steps: RequestStep[] = [
       "details",
       "delivery",
-      "review",
+      "payment",
       "confirmation",
     ];
     const currentIndex = steps.indexOf(step);
     if (currentIndex > 0) {
       setStep(steps[currentIndex - 1]);
+    }
+  };
+
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+
+    try {
+      const userId = localStorage.getItem("userId");
+
+      if (!userId) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to make payment",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
+      // Calculate total amount
+      const totalAmount = getTotalAmount();
+
+      // Initialize payment with Paystack
+      const response = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": userId,
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          paymentMethod: "paystack",
+          email: localStorage.getItem("userEmail"),
+          metadata: {
+            documentType: requestData.type,
+            subType: requestData.subType,
+            deliveryMethod: requestData.deliveryMethod,
+            notes: requestData.notes,
+            deliveryAddress: requestData.deliveryAddress,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.authorization_url) {
+        // Store payment reference for later use
+        setPaymentReference(result.reference);
+
+        toast({
+          title: "Redirecting to Payment",
+          description: "Complete your payment to proceed with the request",
+        });
+
+        // Store request data in sessionStorage for after payment
+        sessionStorage.setItem(
+          "pendingRequestData",
+          JSON.stringify(requestData),
+        );
+        sessionStorage.setItem("paymentReference", result.reference);
+
+        // Redirect to Paystack
+        setTimeout(() => {
+          window.location.href = result.authorization_url;
+        }, 1500);
+      } else {
+        throw new Error(result.message || "Failed to initialize payment");
+      }
+    } catch (error) {
+      console.error("Payment initialization error:", error);
+      if (error.message.includes("HTTP error")) {
+        toast({
+          title: "Payment Error",
+          description: "Server error. Please try again.",
+          variant: "destructive",
+        });
+      } else if (
+        error.message.includes("401") ||
+        error.message.includes("404")
+      ) {
+        toast({
+          title: "Session Expired",
+          description: "Your session has expired. Please log in again.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          localStorage.clear();
+          navigate("/login");
+        }, 2000);
+      } else {
+        toast({
+          title: "Payment Error",
+          description: "Network error. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -195,13 +299,19 @@ export default function NewRequest() {
         return;
       }
 
+      // Submit request with payment reference
       const response = await fetch("/api/requests", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-User-Id": userId,
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({
+          ...requestData,
+          paymentReference: paymentReference,
+          isPaid: true,
+          paymentMethod: "paystack",
+        }),
       });
 
       if (!response.ok) {
@@ -212,29 +322,28 @@ export default function NewRequest() {
 
       if (result.success) {
         setCreatedRequest(result.request);
+        setStep("confirmation");
 
         toast({
-          title: "Request Submitted",
-          description: "Redirecting to payment...",
+          title: "Request Submitted Successfully",
+          description: "Your request has been sent to the admin for processing",
         });
 
-        // Automatically redirect to payment after successful request submission
-        await handleAutomaticPayment(result.request);
+        // Clear session storage
+        sessionStorage.removeItem("pendingRequestData");
+        sessionStorage.removeItem("paymentReference");
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
       console.error("Submit request error:", error);
 
-      // Check if this is a 401 or 404 error which likely means session expired
       if (error.message.includes("401") || error.message.includes("404")) {
         toast({
           title: "Session Expired",
           description: "Your session has expired. Please log in again.",
           variant: "destructive",
         });
-
-        // Clear localStorage and redirect to login after a short delay
         setTimeout(() => {
           localStorage.clear();
           navigate("/login");
@@ -248,66 +357,6 @@ export default function NewRequest() {
       }
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleAutomaticPayment = async (request: any) => {
-    try {
-      const userId = localStorage.getItem("userId");
-
-      // Initialize payment with Paystack automatically
-      const response = await fetch("/api/payments/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Id": userId!,
-        },
-        body: JSON.stringify({
-          requestId: request.id,
-          amount: request.amount,
-          paymentMethod: "paystack", // Default to Paystack
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.authorization_url) {
-        // Show loading message and redirect to Paystack
-        toast({
-          title: "Redirecting to Payment",
-          description: "Please complete your payment to process your request",
-        });
-
-        // Small delay to show the toast message
-        setTimeout(() => {
-          window.location.href = result.authorization_url;
-        }, 1500);
-      } else {
-        toast({
-          title: "Payment Error",
-          description: result.message || "Failed to initialize payment",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Payment initialization error:", error);
-      if (error.message.includes("HTTP error")) {
-        toast({
-          title: "Payment Error",
-          description: "Server error. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Payment Error",
-          description: "Network error. Please try again.",
-          variant: "destructive",
-        });
-      }
     }
   };
 
@@ -330,14 +379,14 @@ export default function NewRequest() {
       subtitle: "How would you like to receive it",
       step: 2,
     },
-    review: {
-      title: "Review & Confirm",
-      subtitle: "Check your request details",
+    payment: {
+      title: "Payment",
+      subtitle: "Complete payment to submit your request",
       step: 3,
     },
     confirmation: {
       title: "Request Submitted",
-      subtitle: "Your request has been created",
+      subtitle: "Your paid request has been sent to admin",
       step: 4,
     },
   };
@@ -600,64 +649,100 @@ export default function NewRequest() {
               </div>
             )}
 
-            {/* Review Step */}
-            {step === "review" && (
+            {/* Payment Step */}
+            {step === "payment" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Review Your Request
+                  Complete Payment
                 </h3>
 
-                <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">
-                      Document Type:
-                    </span>
-                    <span className="text-gray-900">
-                      {documentTypes[requestData.type].name}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">
-                      Specific Type:
-                    </span>
-                    <span className="text-gray-900">{requestData.subType}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">
-                      Delivery Method:
-                    </span>
-                    <span className="text-gray-900 capitalize">
-                      {requestData.deliveryMethod.replace("_", " ")}
-                    </span>
-                  </div>
-                  {requestData.deliveryAddress && (
-                    <div className="flex items-start justify-between">
+                <div className="bg-blue-50 rounded-xl p-6 space-y-4">
+                  <h4 className="font-semibold text-gray-900 mb-4">
+                    Order Summary
+                  </h4>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
                       <span className="font-medium text-gray-700">
-                        Delivery Address:
+                        Document Type:
                       </span>
-                      <span className="text-gray-900 text-right max-w-xs">
-                        {requestData.deliveryAddress}
-                      </span>
-                    </div>
-                  )}
-                  {requestData.notes && (
-                    <div className="flex items-start justify-between">
-                      <span className="font-medium text-gray-700">Notes:</span>
-                      <span className="text-gray-900 text-right max-w-xs">
-                        {requestData.notes}
+                      <span className="text-gray-900">
+                        {documentTypes[requestData.type].name}
                       </span>
                     </div>
-                  )}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-700">
+                        Specific Type:
+                      </span>
+                      <span className="text-gray-900">
+                        {requestData.subType}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-700">
+                        Base Price:
+                      </span>
+                      <span className="text-gray-900">
+                        GH₵{documentTypes[requestData.type].price}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-700">
+                        Delivery:
+                      </span>
+                      <span className="text-gray-900 capitalize">
+                        {requestData.deliveryMethod.replace("_", " ")}
+                        {deliveryOptions.find(
+                          (o) => o.id === requestData.deliveryMethod,
+                        )?.price! > 0 &&
+                          ` (+GH₵${deliveryOptions.find((o) => o.id === requestData.deliveryMethod)?.price})`}
+                      </span>
+                    </div>
+                    <div className="border-t border-blue-200 pt-3">
+                      <div className="flex items-center justify-between text-lg font-semibold">
+                        <span className="text-gray-900">Total Amount:</span>
+                        <span className="text-blue-600">
+                          GH₵{getTotalAmount()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-blue-50 rounded-xl p-6">
-                  <div className="flex items-center justify-between text-lg font-semibold">
-                    <span className="text-gray-900">Total Amount:</span>
-                    <span className="text-blue-600">GH₵{getTotalAmount()}</span>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800 mb-1">
+                        Payment Required
+                      </h4>
+                      <p className="text-sm text-yellow-700">
+                        Payment must be completed before your request is
+                        submitted to the admin for processing. This ensures your
+                        document request is prioritized immediately.
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    Payment will be processed after submitting your request
-                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900">Payment Method</h4>
+                  <div className="bg-white border-2 border-blue-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                        <CreditCard className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-gray-900">
+                          Paystack Payment
+                        </h5>
+                        <p className="text-sm text-gray-600">
+                          Secure payment with card, mobile money, or bank
+                          transfer
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -672,15 +757,33 @@ export default function NewRequest() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     Request Submitted Successfully!
                   </h3>
-                  <p className="text-gray-600">
-                    Your request has been created and you will be redirected to
-                    payment.
+                  <p className="text-gray-600 mb-4">
+                    Your payment has been processed and your request has been
+                    sent to the admin for processing.
                   </p>
                   {createdRequest && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      Request ID: {createdRequest.id}
-                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <p className="text-sm text-gray-600">Request ID:</p>
+                      <p className="font-mono text-lg font-semibold text-gray-900">
+                        {createdRequest.id}
+                      </p>
+                    </div>
                   )}
+                  <p className="text-sm text-gray-500">
+                    You will receive updates about your request via SMS and
+                    email.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/dashboard">
+                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white">
+                      Back to Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/track-requests">
+                    <Button variant="outline">Track This Request</Button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -698,20 +801,20 @@ export default function NewRequest() {
                   Previous
                 </Button>
 
-                {step === "review" ? (
+                {step === "payment" ? (
                   <Button
-                    onClick={handleSubmitRequest}
-                    disabled={isSubmitting}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8"
+                    onClick={handlePayment}
+                    disabled={isProcessingPayment}
+                    className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-8"
                   >
-                    {isSubmitting ? (
+                    {isProcessingPayment ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing & Redirecting to Payment...
+                        Redirecting to Payment...
                       </>
                     ) : (
                       <>
-                        Submit Request & Pay
+                        Pay GH₵{getTotalAmount()}
                         <CreditCard className="ml-2 h-4 w-4" />
                       </>
                     )}
