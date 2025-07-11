@@ -19,6 +19,19 @@ import {
   getAdminStats,
 } from "./routes/admin";
 import {
+  initializePayment,
+  verifyPayment,
+  getPaymentStatus,
+  refundPayment,
+} from "./routes/payments";
+import {
+  generateAndDownloadDocument,
+  previewDocument,
+  getDocumentInfo,
+  adminGenerateDocument,
+  getDocumentTypes,
+} from "./routes/documentGeneration";
+import {
   createRequest,
   getUserRequests,
   getRequest,
