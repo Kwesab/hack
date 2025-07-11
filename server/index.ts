@@ -122,5 +122,9 @@ export function createServer() {
   app.post("/api/test/phone", testPhoneValidation);
   app.post("/api/test/otp", testOTPGeneration);
 
+  // Debug routes
+  app.get("/api/debug/users", debugUsers);
+  app.get("/api/debug/user/:userId", debugUser);
+
   return app;
 }
