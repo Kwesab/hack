@@ -213,8 +213,12 @@ export default function Login() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-ttu-navy to-primary rounded-xl flex items-center justify-center">
-              <GraduationCap className="h-7 w-7 text-white" />
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center border border-gray-200">
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
+                alt="TTU Logo"
+                className="h-10 w-10 object-contain"
+              />
             </div>
             <div className="text-left">
               <h1 className="text-2xl font-bold text-ttu-navy">
