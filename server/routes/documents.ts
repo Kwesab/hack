@@ -48,7 +48,7 @@ export const createRequest: RequestHandler = async (req, res) => {
       attestation: 20,
     };
 
-        const request = db.createRequest({
+    const request = db.createRequest({
       userId,
       type: requestData.type,
       subType: requestData.subType || "",
@@ -284,20 +284,22 @@ export const getAllRequests: RequestHandler = async (req, res) => {
     const requests = await db.getAllRequests();
 
     // Include user information with each request
-    const requestsWithUsers = await Promise.all(requests.map(async (request) => {
-      const user = await db.getUserById(request.userId);
-      return {
-        ...request,
-        user: user
-          ? {
-              name: user.name,
-              phone: user.phone,
-              email: user.email,
-              studentId: user.studentId,
-            }
-          : null,
-      };
-    });
+    const requestsWithUsers = await Promise.all(
+      requests.map(async (request) => {
+        const user = await db.getUserById(request.userId);
+        return {
+          ...request,
+          user: user
+            ? {
+                name: user.name,
+                phone: user.phone,
+                email: user.email,
+                studentId: user.studentId,
+              }
+            : null,
+        };
+      }),
+    );
 
     res.json({
       success: true,
