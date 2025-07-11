@@ -86,6 +86,15 @@ export function createServer() {
   // Document request routes
   app.post("/api/requests", createRequest);
   app.get("/api/requests", getUserRequests);
+
+  // Test endpoint
+  app.get("/api/test-requests", (req, res) => {
+    console.log("📍 Test endpoint hit");
+    res.json({
+      message: "Test endpoint working",
+      timestamp: new Date().toISOString(),
+    });
+  });
   app.get("/api/requests/:id", getRequest);
   app.put("/api/requests/:id/status", updateRequestStatus);
   app.post("/api/requests/:id/payment", processPayment);
