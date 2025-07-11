@@ -7,7 +7,8 @@ export interface User {
   phone: string;
   name: string;
   password: string;
-  role: "admin" | "student";
+  role: "admin" | "student" | "hod";
+  department?: string;
   studentId?: string;
   isVerified: boolean;
   ghanaCard?: {
@@ -15,15 +16,23 @@ export interface User {
     imageUrl: string;
     verified: boolean;
   };
+  digitalSignature?: string;
   createdAt: Date;
 }
 
 export interface DocumentRequest {
   id: string;
   userId: string;
+  userDepartment?: string;
   type: "transcript" | "certificate" | "attestation";
   subType?: string;
-  status: "pending" | "processing" | "ready" | "completed" | "rejected";
+  status:
+    | "pending"
+    | "processing"
+    | "ready"
+    | "completed"
+    | "rejected"
+    | "confirmed";
   deliveryMethod: "digital" | "courier" | "cash_on_delivery";
   deliveryAddress?: string;
   amount: number;
@@ -33,10 +42,14 @@ export interface DocumentRequest {
   documents: string[];
   notes?: string;
   adminNotes?: string;
+  rejectionReason?: string;
+  hodSignature?: string;
+  hodId?: string;
   downloadUrl?: string;
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
+  reviewedAt?: Date;
 }
 
 export interface OTPSession {
@@ -84,9 +97,7 @@ class DatabaseService {
         throw new Error("No database URL provided");
       }
     } catch (error) {
-      console.log(
-        "⚠�� PostgreSQL connection failed, using in-memory database",
-      );
+      console.log("⚠️ PostgreSQL connection failed, using in-memory database");
       console.log("Error:", error.message);
       this.usePostgres = false;
       this.initializeInMemoryData();
@@ -100,13 +111,15 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR PRIMARY KEY,
         email VARCHAR UNIQUE NOT NULL,
-                phone VARCHAR,
+        phone VARCHAR,
         name VARCHAR NOT NULL,
         password VARCHAR NOT NULL,
         role VARCHAR DEFAULT 'student',
+        department VARCHAR,
         student_id VARCHAR,
         is_verified BOOLEAN DEFAULT false,
         ghana_card JSONB,
+        digital_signature TEXT,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
@@ -116,6 +129,7 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS document_requests (
         id VARCHAR PRIMARY KEY,
         user_id VARCHAR NOT NULL,
+        user_department VARCHAR,
         type VARCHAR NOT NULL,
         sub_type VARCHAR,
         status VARCHAR DEFAULT 'pending',
@@ -128,10 +142,14 @@ class DatabaseService {
         documents JSONB DEFAULT '[]',
         notes TEXT,
         admin_notes TEXT,
+        rejection_reason TEXT,
+        hod_signature TEXT,
+        hod_id VARCHAR,
         download_url VARCHAR,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW(),
-        completed_at TIMESTAMP
+        completed_at TIMESTAMP,
+        reviewed_at TIMESTAMP
       );
     `;
 
