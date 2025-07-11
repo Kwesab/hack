@@ -195,7 +195,8 @@ export function createServer() {
   // Legacy document generation routes (keeping for compatibility)
   app.get("/api/generate/document/:requestId", generateDocument);
   app.get("/api/generate/pdf/:requestId", generatePDF);
-  app.get("/api/generate/info/:requestId", getDocumentInfo);
+  app.get("/api/generate/preview/:requestId", previewDocumentLegacy);
+  app.get("/api/generate/info/:requestId", getDocumentInfoLegacy);
 
   // Test routes for debugging
   app.post("/api/test/phone", testPhoneValidation);
