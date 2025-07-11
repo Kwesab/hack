@@ -76,33 +76,25 @@ export const generateAndDownloadDocument: RequestHandler = async (req, res) => {
     }
 
     // Prepare document data with real user information
+    const studentId = user.studentId || "TTU/CS/2020/001";
+    const department = user.department || "Computer Science";
+    const gpa = generateGPA(studentId);
+
     const documentData = {
       studentName: user.name,
-      studentId: user.studentId || "TTU/UNKNOWN/2024",
+      studentId: studentId,
       documentType: request.type,
       subType: request.subType,
-      graduationDate: this.generateGraduationDate(
-        user.studentId || "TTU/CS/2020/001",
-      ),
-      degreeProgram: this.generateDegreeTitle(
-        user.department || "Computer Science",
-        "undergraduate",
-      ),
-      gpa: this.generateGPA(user.studentId || "TTU/CS/2020/001"),
-      classification: this.getClassification(
-        this.generateGPA(user.studentId || "TTU/CS/2020/001"),
-      ),
+      graduationDate: generateGraduationDate(studentId),
+      degreeProgram: generateDegreeTitle(department, "undergraduate"),
+      gpa: gpa,
+      classification: getClassification(gpa),
       issueDate: new Date().toLocaleDateString(),
       requestId: request.id,
-      department: user.department,
-      entranceYear: this.extractYearFromStudentId(
-        user.studentId || "TTU/CS/2020/001",
-      ).toString(),
+      department: department,
+      entranceYear: extractYearFromStudentId(studentId).toString(),
       academicLevel: "undergraduate",
-      studyPeriod: this.generateStudyPeriod(
-        user.studentId || "TTU/CS/2020/001",
-        "undergraduate",
-      ),
+      studyPeriod: generateStudyPeriod(studentId, "undergraduate"),
       phone: user.phone,
       email: user.email,
     };
