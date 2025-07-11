@@ -748,6 +748,14 @@ export default function Index() {
                 <BookOpen className="mr-2 h-5 w-5" />
                 Learn More
               </Button>
+              <Link to="/admin">
+                <Button
+                  variant="outline"
+                  className="border-2 border-yellow-300/50 text-yellow-200 hover:bg-yellow-300/10 px-6 py-3 text-sm font-medium rounded-xl transition-all duration-300 w-full sm:w-auto"
+                >
+                  🔧 Admin Dashboard (Test)
+                </Button>
+              </Link>
             </div>
 
             {/* Trust Indicators */}
