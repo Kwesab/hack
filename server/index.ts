@@ -14,6 +14,11 @@ import {
   getCurrentAuthUser,
 } from "./routes/newAuth";
 import {
+  getPendingGhanaCardVerifications,
+  getAllUsers,
+  getAdminStats,
+} from "./routes/admin";
+import {
   createRequest,
   getUserRequests,
   getRequest,
