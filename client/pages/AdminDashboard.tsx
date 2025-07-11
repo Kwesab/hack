@@ -259,8 +259,14 @@ export default function AdminDashboard() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        } catch (e) {
+          // If we can't read the error text, use the status message
+        }
+        throw new Error(errorMessage);
       }
 
       // Create blob from response
