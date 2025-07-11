@@ -28,6 +28,7 @@ import {
   previewDocument,
   getDocumentInfo,
 } from "./routes/generate";
+import { testPhoneValidation, testOTPGeneration } from "./routes/test";
 
 export function createServer() {
   const app = express();
