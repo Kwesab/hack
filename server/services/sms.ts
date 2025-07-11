@@ -86,18 +86,10 @@ class SMSService {
           errorMessages[responseCode as keyof typeof errorMessages] ||
           `Unknown error (${responseCode})`;
 
-        // For development, if API key is invalid, simulate success to allow testing
-        if (responseCode === "1004") {
-          console.log(
-            "API key invalid - returning simulated success for development",
-          );
-          return {
-            success: true,
-            message:
-              "SMS sent successfully (simulated - API key needs verification)",
-            data: { messageId: `sim_${Date.now()}` },
-          };
-        }
+        // Log detailed error for debugging
+        console.error(
+          `SMS API Error - Code: ${responseCode}, Message: ${errorMessage}`,
+        );
 
         return {
           success: false,
