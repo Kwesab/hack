@@ -57,6 +57,11 @@ export function createServer() {
   app.post("/api/auth/login", login);
   app.get("/api/auth/me", getCurrentUser);
 
+  // New email/password + OTP auth routes
+  app.post("/api/auth/email-login", emailLogin);
+  app.post("/api/auth/verify-login-otp", verifyLoginOTP);
+  app.get("/api/auth/current-user", getCurrentAuthUser);
+
   // Document request routes
   app.post("/api/requests", createRequest);
   app.get("/api/requests", getUserRequests);
