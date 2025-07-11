@@ -112,6 +112,11 @@ export default function AdminDashboard() {
     try {
       // Fetch all requests
       const requestsResponse = await fetch("/api/admin/requests");
+
+      if (!requestsResponse.ok) {
+        throw new Error(`HTTP error! status: ${requestsResponse.status}`);
+      }
+
       const requestsResult = await requestsResponse.json();
 
       if (requestsResult.success) {
