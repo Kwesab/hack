@@ -48,7 +48,7 @@ export const createRequest: RequestHandler = async (req, res) => {
       attestation: 20,
     };
 
-    const request = db.createRequest({
+        const request = db.createRequest({
       userId,
       type: requestData.type,
       subType: requestData.subType || "",
@@ -281,11 +281,11 @@ export const processPayment: RequestHandler = async (req, res) => {
 // Get all requests (admin only)
 export const getAllRequests: RequestHandler = async (req, res) => {
   try {
-    const requests = db.getAllRequests();
+    const requests = await db.getAllRequests();
 
     // Include user information with each request
-    const requestsWithUsers = requests.map((request) => {
-      const user = db.getUserById(request.userId);
+    const requestsWithUsers = await Promise.all(requests.map(async (request) => {
+      const user = await db.getUserById(request.userId);
       return {
         ...request,
         user: user
