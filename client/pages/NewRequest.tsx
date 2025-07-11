@@ -200,6 +200,59 @@ export default function NewRequest() {
     }
   };
 
+  const handleAutomaticPayment = async (request: any) => {
+    try {
+      const userId = localStorage.getItem("userId");
+
+      // Initialize payment with Paystack automatically
+      const response = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": userId!,
+        },
+        body: JSON.stringify({
+          requestId: request.id,
+          amount: request.amount,
+          paymentMethod: "paystack", // Default to Paystack
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.authorization_url) {
+        // Show loading message and redirect to Paystack
+        toast({
+          title: "Redirecting to Payment",
+          description: "Please complete your payment to process your request",
+        });
+
+        // Small delay to show the toast message
+        setTimeout(() => {
+          window.location.href = result.authorization_url;
+        }, 1500);
+      } else {
+        // If automatic payment fails, show payment step
+        setStep("payment");
+        toast({
+          title: "Payment Required",
+          description:
+            "Please choose a payment method to complete your request",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Automatic payment error:", error);
+      // If automatic payment fails, show payment step
+      setStep("payment");
+      toast({
+        title: "Payment Required",
+        description: "Please choose a payment method to complete your request",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handlePayment = async (paymentMethod: string) => {
     if (!createdRequest) return;
 
