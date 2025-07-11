@@ -164,7 +164,7 @@ export const verifyGhanaCard: RequestHandler = async (req, res) => {
       `Verifying Ghana Card for user: ${userId}, verified: ${verified}`,
     );
 
-    const user = db.getUserById(userId);
+    const user = await db.getUserById(userId);
 
     if (!user) {
       console.log(`User not found: ${userId}`);
