@@ -53,8 +53,8 @@ import {
 import {
   generateDocument,
   generatePDF,
-  previewDocument,
-  getDocumentInfo,
+  previewDocument as previewDocumentLegacy,
+  getDocumentInfo as getDocumentInfoLegacy,
 } from "./routes/generate";
 import { testPhoneValidation, testOTPGeneration } from "./routes/test";
 
