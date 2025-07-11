@@ -91,10 +91,12 @@ class SMSService {
           `SMS API Error - Code: ${responseCode}, Message: ${errorMessage}`,
         );
 
-        // For development with invalid API key, allow bypass to continue testing
-        if (responseCode === "1004") {
+        // For development with API issues, allow bypass to continue testing
+        if (responseCode === "1004" || responseCode === "1006") {
+          const errorType =
+            responseCode === "1004" ? "API key invalid" : "Invalid sender ID";
           console.log(
-            "⚠️ API key invalid - allowing development bypass. SMS will not be sent to phone.",
+            `⚠️ ${errorType} - allowing development bypass. SMS will not be sent to phone.`,
           );
           console.log(
             `📱 OTP for development: The OTP code is logged above for testing purposes.`,
