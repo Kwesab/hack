@@ -322,7 +322,13 @@ export default function HODDashboard() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <GraduationCap className="h-8 w-8 text-primary" />
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+                  <img
+                    src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
+                    alt="TTU Logo"
+                    className="h-6 w-6 object-contain"
+                  />
+                </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">
                     HOD Dashboard
