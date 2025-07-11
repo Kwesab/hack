@@ -74,11 +74,12 @@ export default function RobustDashboard() {
 
       console.log("Fetching requests for userId:", userId);
 
-      // Add timeout to fetch request
+      // Add timeout to fetch request (increased to 15 seconds for better reliability)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
+        console.log("⏰ Request timeout - aborting fetch");
         controller.abort();
-      }, 8000); // 8 second timeout
+      }, 15000); // 15 second timeout
 
       const response = await fetch("/api/requests", {
         headers: {
