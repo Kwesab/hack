@@ -7,7 +7,7 @@ import { smsService } from "../services/sms";
 const createRequestSchema = z.object({
   type: z.enum(["transcript", "certificate", "attestation"]),
   subType: z.string().optional(),
-  deliveryMethod: z.enum(["digital", "physical", "both"]),
+  deliveryMethod: z.enum(["digital", "courier", "cash_on_delivery"]),
   deliveryAddress: z.string().optional(),
   notes: z.string().optional(),
 });
