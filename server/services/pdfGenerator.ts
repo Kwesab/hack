@@ -171,7 +171,7 @@ class PDFGeneratorService {
     doc.setFont("helvetica", "normal");
     doc.text(`Student ID: ${data.studentId}`, 148.5, 155, { align: "center" });
     doc.text(
-      `Date of Graduation: ${data.graduationDate || "July 2024"}`,
+      `Date of Graduation: ${data.graduationDate || this.generateGraduationDate(data.studentId)}`,
       148.5,
       165,
       {
