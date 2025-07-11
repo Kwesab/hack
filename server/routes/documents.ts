@@ -28,17 +28,35 @@ export const createRequest: RequestHandler = async (req, res) => {
     const userId = req.headers["x-user-id"] as string;
 
     if (!userId) {
+      console.log("❌ No userId provided");
       return res.status(401).json({
         success: false,
         message: "Not authenticated",
       });
     }
 
+    console.log("🔍 Looking for user with ID:", userId);
     const user = await db.getUserById(userId);
     if (!user) {
+      console.log("❌ User not found for ID:", userId);
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    console.log("✅ User found:", user.id, user.name);
+    console.log("🔍 Validating request data:", req.body);
+
+    try {
+      const requestData = createRequestSchema.parse(req.body);
+      console.log("✅ Validation successful:", requestData);
+    } catch (validationError) {
+      console.error("❌ Validation failed:", validationError);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request data",
+        error: validationError.message,
       });
     }
 
