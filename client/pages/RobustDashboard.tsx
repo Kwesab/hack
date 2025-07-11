@@ -106,7 +106,9 @@ export default function RobustDashboard() {
       console.log("Requests result:", result);
 
       if (result.success) {
-        setRecentRequests(result.requests?.slice(0, 2) || []);
+        // Ensure result.requests is an array before calling slice
+        const requests = Array.isArray(result.requests) ? result.requests : [];
+        setRecentRequests(requests.slice(0, 2));
       } else {
         console.error("Requests API returned error:", result.message);
         setRecentRequests([]);
