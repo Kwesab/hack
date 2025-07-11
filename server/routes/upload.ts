@@ -160,14 +160,29 @@ export const verifyGhanaCard: RequestHandler = async (req, res) => {
     const userId = req.params.userId;
     const { verified } = req.body;
 
+    console.log(
+      `Verifying Ghana Card for user: ${userId}, verified: ${verified}`,
+    );
+
     const user = db.getUserById(userId);
 
-    if (!user || !user.ghanaCard) {
+    if (!user) {
+      console.log(`User not found: ${userId}`);
       return res.status(404).json({
         success: false,
-        message: "User or Ghana Card not found",
+        message: "User not found",
       });
     }
+
+    if (!user.ghanaCard) {
+      console.log(`Ghana Card not found for user: ${userId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Ghana Card not found for this user",
+      });
+    }
+
+    console.log(`Found user and Ghana Card, updating verification status...`);
 
     const updatedUser = db.updateUser(userId, {
       ghanaCard: {
