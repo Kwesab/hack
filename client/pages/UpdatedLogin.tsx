@@ -17,7 +17,6 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import {
-  GraduationCap,
   Smartphone,
   Shield,
   ArrowLeft,
@@ -26,6 +25,8 @@ import {
   EyeOff,
   Mail,
   Lock,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -100,23 +101,16 @@ export default function UpdatedLogin() {
 
       if (result.success) {
         setStep("otp");
-        setCountdown(60);
-
-        // Start countdown
-        const interval = setInterval(() => {
+        setCountdown(30);
+        const timer = setInterval(() => {
           setCountdown((prev) => {
             if (prev <= 1) {
-              clearInterval(interval);
+              clearInterval(timer);
               return 0;
             }
             return prev - 1;
           });
         }, 1000);
-
-        // Show the OTP in development for easy testing
-        if (result.otp) {
-          console.log(`🔑 OTP for ${formattedPhone}: ${result.otp}`);
-        }
       } else {
         alert(result.message || "Failed to send OTP");
       }
@@ -182,350 +176,335 @@ export default function UpdatedLogin() {
         alert(result.message || "Invalid OTP");
       }
     } catch (error) {
-      console.error("Verify OTP error:", error);
+      console.error("OTP verification error:", error);
       alert("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const stepInfo = {
+    credentials: {
+      title: "Welcome Back",
+      subtitle: "Sign in to access your documents",
+      step: 1,
+    },
+    phone: {
+      title: "Verify Phone Number",
+      subtitle: "We'll send a verification code to your phone",
+      step: 2,
+    },
+    otp: {
+      title: "Enter Verification Code",
+      subtitle: `Code sent to ${phoneNumber}`,
+      step: 3,
+    },
+    success: {
+      title: "Login Successful!",
+      subtitle: nextStep?.message || "Redirecting...",
+      step: 4,
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ttu-light-blue via-background to-ttu-gray flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-indigo-600/10 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-yellow-400/10 to-orange-600/10 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3"></div>
+
+      <div className="w-full max-w-md relative">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg border border-gray-100">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
-                alt="TTU Logo"
-                className="h-10 w-10 object-contain"
-              />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="relative">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-gray-100">
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
+                  alt="TTU Logo"
+                  className="h-12 w-12 object-contain"
+                />
+              </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                <Sparkles className="h-3 w-3 text-white" />
+              </div>
             </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold text-ttu-navy">
-                TTU DocPortal
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Secure Document Access
-              </p>
-            </div>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+              TTU DocPortal
+            </h1>
+            <p className="text-gray-600 font-medium">
+              Takoradi Technical University
+            </p>
           </div>
         </div>
 
         {/* Main Card */}
-        <Card className="shadow-elevation-3 border-0">
-          <CardHeader className="text-center space-y-4">
-            <div className="flex items-center justify-center">
-              {step !== "credentials" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (step === "phone") setStep("credentials");
-                    if (step === "otp") setStep("phone");
-                    if (step === "success") setStep("otp");
-                  }}
-                  className="absolute left-6 top-6"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              )}
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  <div
-                    className={cn(
-                      "w-3 h-3 rounded-full transition-colors",
-                      step === "credentials" ? "bg-primary" : "bg-primary/20",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "w-3 h-3 rounded-full transition-colors",
-                      step === "phone" || step === "otp" || step === "success"
-                        ? "bg-primary"
-                        : "bg-primary/20",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "w-3 h-3 rounded-full transition-colors",
-                      step === "otp" || step === "success"
-                        ? "bg-primary"
-                        : "bg-primary/20",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "w-3 h-3 rounded-full transition-colors",
-                      step === "success" ? "bg-success" : "bg-primary/20",
-                    )}
-                  />
-                </div>
-              </div>
+        <Card className="border-0 shadow-2xl shadow-blue-500/10 bg-white/80 backdrop-blur-xl">
+          <CardHeader className="text-center space-y-4 pb-6">
+            {/* Progress Indicator */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              {[1, 2, 3, 4].map((num) => (
+                <div
+                  key={num}
+                  className={cn(
+                    "w-3 h-3 rounded-full transition-all duration-300",
+                    stepInfo[step].step >= num
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600"
+                      : "bg-gray-200",
+                  )}
+                />
+              ))}
             </div>
 
-            {step === "credentials" && (
-              <>
-                <CardTitle className="text-ttu-navy">
-                  Sign In to Your Account
-                </CardTitle>
-                <CardDescription>
-                  Enter your TTU email and password to continue
-                </CardDescription>
-              </>
+            {/* Back Button */}
+            {step !== "credentials" && step !== "success" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (step === "phone") setStep("credentials");
+                  if (step === "otp") setStep("phone");
+                }}
+                className="absolute left-6 top-6 p-2 hover:bg-gray-100 rounded-full"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
             )}
 
-            {step === "phone" && (
-              <>
-                <CardTitle className="text-ttu-navy">
-                  Enter Phone Number
-                </CardTitle>
-                <CardDescription>
-                  Welcome back,{" "}
-                  <span className="font-medium text-ttu-navy">
-                    {userInfo?.name}
-                  </span>
-                  ! Enter your phone number for verification
-                </CardDescription>
-              </>
-            )}
-
-            {step === "otp" && (
-              <>
-                <CardTitle className="text-ttu-navy">
-                  Verify Your Identity
-                </CardTitle>
-                <CardDescription>
-                  We sent a 6-digit code to{" "}
-                  <span className="font-medium text-ttu-navy">
-                    {phoneNumber}
-                  </span>
-                </CardDescription>
-              </>
-            )}
-
-            {step === "success" && (
-              <>
-                <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle className="h-8 w-8 text-success" />
-                </div>
-                <CardTitle className="text-success">Welcome!</CardTitle>
-                <CardDescription>
-                  {nextStep?.message || "Authentication successful"}
-                </CardDescription>
-              </>
-            )}
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold text-gray-900">
+                {stepInfo[step].title}
+              </CardTitle>
+              <CardDescription className="text-gray-600 text-base">
+                {stepInfo[step].subtitle}
+              </CardDescription>
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-6">
+            {/* Credentials Step */}
             {step === "credentials" && (
               <form onSubmit={handleCredentialsSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your.email@ttu.edu.gh"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="email"
+                      className="text-sm font-medium text-gray-700"
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your.email@ttu.edu.gh"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="password"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-ttu-navy hover:bg-ttu-navy/90"
-                  disabled={isLoading || !email || !password}
+                  disabled={isLoading}
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Verifying...
                     </>
                   ) : (
-                    <>
-                      <Lock className="mr-2 h-4 w-4" />
-                      Continue
-                    </>
+                    "Continue"
                   )}
                 </Button>
-
-                <div className="bg-ttu-light-blue/20 rounded-lg p-4 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-ttu-navy" />
-                    <span className="text-sm font-medium text-ttu-navy">
-                      Test Credentials
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p>
-                      <strong>Admin:</strong> admin@ttu.edu.gh / admin123
-                    </p>
-                    <p>
-                      <strong>Students:</strong> john.doe@student.ttu.edu.gh,
-                      test.student@student.ttu.edu.gh / student123
-                    </p>
-                  </div>
-                </div>
               </form>
             )}
 
+            {/* Phone Step */}
             {step === "phone" && (
               <form onSubmit={handlePhoneSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label
+                    htmlFor="phone"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Phone Number
+                  </Label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">🇬🇭</span>
-                      <span className="text-sm text-muted-foreground">
-                        +233
-                      </span>
-                    </div>
+                    <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="50 123 4567"
+                      placeholder="0XX XXX XXXX"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="pl-20"
                       required
+                      className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Phone number auto-filled from your account
+                  <p className="text-xs text-gray-500">
+                    We'll send a verification code to this number
                   </p>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-ttu-navy hover:bg-ttu-navy/90"
-                  disabled={isLoading || !phoneNumber}
+                  disabled={isLoading}
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Sending Code...
                     </>
                   ) : (
-                    <>
-                      <Smartphone className="mr-2 h-4 w-4" />
-                      Send Verification Code
-                    </>
+                    "Send Verification Code"
                   )}
                 </Button>
               </form>
             )}
 
+            {/* OTP Step */}
             {step === "otp" && (
               <form onSubmit={handleOtpSubmit} className="space-y-6">
-                <div className="flex justify-center">
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={setOtp}
-                    className="justify-center"
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium text-gray-700 text-center block">
+                    Enter 6-digit verification code
+                  </Label>
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      value={otp}
+                      onChange={setOtp}
+                      className="gap-2"
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot
+                          index={0}
+                          className="w-12 h-12 text-lg font-semibold border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        />
+                        <InputOTPSlot
+                          index={1}
+                          className="w-12 h-12 text-lg font-semibold border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        />
+                        <InputOTPSlot
+                          index={2}
+                          className="w-12 h-12 text-lg font-semibold border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        />
+                        <InputOTPSlot
+                          index={3}
+                          className="w-12 h-12 text-lg font-semibold border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        />
+                        <InputOTPSlot
+                          index={4}
+                          className="w-12 h-12 text-lg font-semibold border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        />
+                        <InputOTPSlot
+                          index={5}
+                          className="w-12 h-12 text-lg font-semibold border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
 
-                <div className="text-center">
-                  {countdown > 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Resend code in{" "}
-                      <span className="font-medium text-ttu-navy">
-                        {countdown}s
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      OTP sent to your phone number
+                  {countdown > 0 && (
+                    <p className="text-center text-sm text-gray-500">
+                      Resend code in {countdown}s
                     </p>
                   )}
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-ttu-navy hover:bg-ttu-navy/90"
                   disabled={isLoading || otp.length !== 6}
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Verifying...
                     </>
                   ) : (
-                    "Complete Sign In"
+                    "Verify & Sign In"
                   )}
                 </Button>
               </form>
             )}
 
+            {/* Success Step */}
             {step === "success" && (
-              <div className="space-y-6">
-                <div className="text-center space-y-2">
-                  <Badge className="bg-success/10 text-success">
-                    Authentication Complete
-                  </Badge>
-                  <p className="text-sm text-muted-foreground">
-                    Redirecting to {userInfo?.role} dashboard...
-                  </p>
+              <div className="text-center space-y-6 py-8">
+                <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle className="h-10 w-10 text-white" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Welcome back, {userInfo?.name}!
+                  </h3>
+                  <p className="text-gray-600">{nextStep?.message}</p>
                 </div>
 
                 <Button
-                  className="w-full bg-success hover:bg-success/90"
-                  onClick={() => {
-                    navigate(nextStep?.route || "/dashboard");
-                  }}
+                  className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  onClick={() => navigate(nextStep?.route || "/dashboard")}
                 >
-                  Continue
+                  Continue to Dashboard
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Trust Indicators */}
+        <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-green-600" />
+            <span>Bank-Level Security</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <span>Ghana Card Verified</span>
+          </div>
+        </div>
       </div>
     </div>
   );
