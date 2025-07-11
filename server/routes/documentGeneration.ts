@@ -312,11 +312,11 @@ export const adminGenerateDocument: RequestHandler = async (req, res) => {
 
     try {
       const pdfBuffer = await pdfGeneratorService.generateDocumentPDF(
-        "transcript",
+        request.type,
         documentData,
       );
 
-      const filename = `TTU_transcript_${documentData.studentId}_${Date.now()}.pdf`;
+      const filename = `TTU_${request.type}_${documentData.studentId}_${Date.now()}.pdf`;
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
