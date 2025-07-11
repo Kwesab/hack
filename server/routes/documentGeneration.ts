@@ -492,3 +492,88 @@ export const getDocumentTypes: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Helper methods for generating realistic data based on user information
+function generateGraduationDate(studentId: string): string {
+  const yearMatch = studentId.match(/\/(\d{4})\//);
+  const entranceYear = yearMatch
+    ? parseInt(yearMatch[1])
+    : new Date().getFullYear() - 4;
+  const graduationYear = entranceYear + 4; // Assuming 4-year program
+  return `June ${graduationYear}`;
+}
+
+function generateDegreeTitle(department: string, level: string): string {
+  const degreeTitles = {
+    "Computer Science": {
+      undergraduate: "Bachelor of Technology in Computer Science",
+      postgraduate: "Master of Science in Computer Science",
+      diploma: "Higher National Diploma in Computer Science",
+    },
+    "Electrical Engineering": {
+      undergraduate: "Bachelor of Engineering in Electrical Engineering",
+      postgraduate: "Master of Engineering in Electrical Engineering",
+      diploma: "Higher National Diploma in Electrical Engineering",
+    },
+    "Mechanical Engineering": {
+      undergraduate: "Bachelor of Engineering in Mechanical Engineering",
+      postgraduate: "Master of Engineering in Mechanical Engineering",
+      diploma: "Higher National Diploma in Mechanical Engineering",
+    },
+  };
+
+  return (
+    degreeTitles[department]?.[level] ||
+    `Bachelor of Technology in ${department}`
+  );
+}
+
+function generateGPA(studentId: string): string {
+  // Generate consistent GPA based on student ID
+  const hash = simpleHash(studentId);
+  const gpaOptions = [
+    "3.85",
+    "3.67",
+    "3.45",
+    "3.78",
+    "3.56",
+    "3.92",
+    "3.34",
+    "3.71",
+  ];
+  return gpaOptions[hash % gpaOptions.length];
+}
+
+function getClassification(gpa: string): string {
+  const gpaNum = parseFloat(gpa);
+  if (gpaNum >= 3.7) return "First Class Honours";
+  if (gpaNum >= 3.3) return "Second Class Upper Division";
+  if (gpaNum >= 2.7) return "Second Class Lower Division";
+  if (gpaNum >= 2.0) return "Third Class";
+  return "Pass";
+}
+
+function extractYearFromStudentId(studentId: string): number {
+  const yearMatch = studentId.match(/\/(\d{4})\//);
+  return yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear() - 4;
+}
+
+function generateStudyPeriod(studentId: string, level: string): string {
+  const yearMatch = studentId.match(/\/(\d{4})\//);
+  const entranceYear = yearMatch
+    ? parseInt(yearMatch[1])
+    : new Date().getFullYear() - 4;
+  const duration = level === "postgraduate" ? 2 : 4;
+  const graduationYear = entranceYear + duration;
+  return `September ${entranceYear} - June ${graduationYear}`;
+}
+
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
