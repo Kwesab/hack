@@ -32,6 +32,7 @@ const App = () => (
           <Route path="/upload-documents" element={<UploadDocuments />} />
           <Route path="/track-requests" element={<TrackRequests />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/test-otp" element={<TestOTP />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
