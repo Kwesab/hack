@@ -105,6 +105,10 @@ export default function UpdatedLogin() {
         body: JSON.stringify({ phone: formattedPhone }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -124,7 +128,11 @@ export default function UpdatedLogin() {
       }
     } catch (error) {
       console.error("Send OTP error:", error);
-      alert("Network error. Please try again.");
+      if (error.message.includes("HTTP error")) {
+        alert("Server error. Please try again.");
+      } else {
+        alert("Network error. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
