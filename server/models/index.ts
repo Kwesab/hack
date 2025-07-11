@@ -63,6 +63,10 @@ class Database {
     return Array.from(this.users.values()).find((user) => user.phone === phone);
   }
 
+  getUserByEmail(email: string): User | undefined {
+    return Array.from(this.users.values()).find((user) => user.email === email);
+  }
+
   getUserById(id: string): User | undefined {
     return this.users.get(id);
   }
