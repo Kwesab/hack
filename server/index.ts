@@ -40,6 +40,9 @@ import {
   updateRequestStatus,
   processPayment,
   getAllRequests,
+  getDepartmentRequests,
+  confirmRequest,
+  rejectRequest,
 } from "./routes/documents";
 import {
   uploadGhanaCard,
