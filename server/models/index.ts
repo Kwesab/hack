@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email?: string;
   studentId?: string;
+  password?: string;
   isVerified: boolean;
   ghanaCard?: {
     number: string;
