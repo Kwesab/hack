@@ -27,6 +27,69 @@ const credentialsSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+// Verify credentials (email/password)
+export const verifyCredentials: RequestHandler = async (req, res) => {
+  try {
+    console.log("Verify credentials request:", req.body);
+
+    const validation = credentialsSchema.safeParse(req.body);
+    if (!validation.success) {
+      console.log("Validation error:", validation.error);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password format",
+        errors: validation.error.errors,
+      });
+    }
+
+    const { email, password } = validation.data;
+    console.log("Verifying credentials for:", email);
+
+    // Find user by email
+    const user = await db.getUserByEmail(email);
+
+    if (!user) {
+      console.log("User not found for email:", email);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Verify password (in production, compare hashed passwords)
+    if (user.password !== password) {
+      console.log("Password mismatch for user:", user.id);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    console.log("Credentials verified successfully for user:", user.id);
+
+    res.json({
+      success: true,
+      message: "Credentials verified successfully",
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        name: user.name,
+        role: user.role,
+        studentId: user.studentId,
+        isVerified: user.isVerified,
+        ghanaCard: user.ghanaCard,
+      },
+    });
+  } catch (error) {
+    console.error("Verify Credentials Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 // Send OTP
 export const sendOTP: RequestHandler = async (req, res) => {
   try {
