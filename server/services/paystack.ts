@@ -135,6 +135,8 @@ class PaystackService {
     reference: string,
   ): Promise<PaystackVerifyPaymentResponse> {
     try {
+      console.log("🔍 Verifying payment with reference:", reference);
+
       const response = await fetch(
         `${this.baseUrl}/transaction/verify/${reference}`,
         {
@@ -146,15 +148,36 @@ class PaystackService {
         },
       );
 
-      const data = await response.json();
+      console.log("📊 Verification response status:", response.status);
+
+      const responseText = await response.text();
+      console.log("📄 Verification response:", responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("❌ Failed to parse verification response:", parseError);
+        throw new Error("Invalid response from payment gateway");
+      }
 
       if (!response.ok) {
+        console.error("❌ Verification failed:", data);
         throw new Error(data.message || "Payment verification failed");
       }
 
+      if (!data.status) {
+        console.error("❌ Payment verification returned false:", data.message);
+        throw new Error(data.message || "Payment verification failed");
+      }
+
+      console.log("✅ Payment verified successfully:", data.data.status);
+      console.log("💰 Amount paid:", data.data.amount / 100, "GHS");
+      console.log("📧 Customer:", data.data.customer.email);
+
       return data;
     } catch (error) {
-      console.error("Paystack verify payment error:", error);
+      console.error("❌ Paystack verify payment error:", error);
       throw error;
     }
   }
