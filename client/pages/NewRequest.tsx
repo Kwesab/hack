@@ -225,11 +225,16 @@ export default function NewRequest() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.success && result.authorization_url) {
+        // Redirect to Paystack payment page
+        window.location.href = result.authorization_url;
+      } else if (result.success) {
+        // For cash on delivery or other non-Paystack methods
         setCreatedRequest(result.request);
+        setStep("confirmation");
         toast({
-          title: "Payment Successful",
-          description: "Your payment has been processed successfully",
+          title: "Request Processed",
+          description: "Your request has been processed successfully",
         });
       } else {
         throw new Error(result.message);
