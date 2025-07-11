@@ -71,8 +71,8 @@ export const getAllUsers: RequestHandler = async (req, res) => {
 // Get dashboard stats for admin
 export const getAdminStats: RequestHandler = async (req, res) => {
   try {
-    const allUsers = Array.from((db as any).users.values());
-    const allRequests = Array.from((db as any).requests.values());
+    const allUsers = await db.getAllUsers();
+    const allRequests = await db.getAllRequests();
 
     const stats = {
       totalUsers: allUsers.length,
