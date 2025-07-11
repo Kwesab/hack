@@ -211,6 +211,7 @@ export default function NewRequest() {
           amount: totalAmount,
           paymentMethod: "paystack",
           email: localStorage.getItem("userEmail"),
+          callback_url: `${window.location.origin}/payment/success`,
           metadata: {
             documentType: requestData.type,
             subType: requestData.subType,
@@ -683,7 +684,7 @@ export default function NewRequest() {
                         Base Price:
                       </span>
                       <span className="text-gray-900">
-                        GH₵{documentTypes[requestData.type].price}
+                        GH���{documentTypes[requestData.type].price}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
