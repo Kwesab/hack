@@ -30,6 +30,7 @@ import {
   AlertCircle,
   CreditCard,
   Download,
+  Smartphone,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
