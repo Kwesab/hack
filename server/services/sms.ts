@@ -85,19 +85,25 @@ class SMSService {
   }
 
   private formatPhoneNumber(phone: string): string {
+    console.log(`Formatting phone number: ${phone}`);
+
     // Remove any spaces, dashes, or other characters
     let cleaned = phone.replace(/[^\d]/g, "");
+    console.log(`After cleaning: ${cleaned}`);
 
     // If it starts with 0, replace with 233
     if (cleaned.startsWith("0")) {
       cleaned = "233" + cleaned.substring(1);
+      console.log(`After replacing 0 with 233: ${cleaned}`);
     }
 
     // If it doesn't start with 233, add it
     if (!cleaned.startsWith("233")) {
       cleaned = "233" + cleaned;
+      console.log(`After adding 233 prefix: ${cleaned}`);
     }
 
+    console.log(`Final formatted number: ${cleaned}`);
     return cleaned;
   }
 
