@@ -150,8 +150,8 @@ export default function UpdatedLogin() {
       const result = await response.json();
 
       if (result.success) {
-        // Store user info from the database user
-        localStorage.setItem("userId", userInfo.id);
+        // Store user info from the OTP verification response (which has the correct user ID)
+        localStorage.setItem("userId", result.user.id);
         localStorage.setItem("userEmail", userInfo.email);
         localStorage.setItem("userName", userInfo.name);
         localStorage.setItem("userRole", userInfo.role);
