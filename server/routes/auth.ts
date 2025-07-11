@@ -21,10 +21,24 @@ const loginSchema = z.object({
 // Send OTP
 export const sendOTP: RequestHandler = async (req, res) => {
   try {
-    const { phone } = phoneSchema.parse(req.body);
+    console.log("Send OTP request body:", req.body);
+
+    const validation = phoneSchema.safeParse(req.body);
+    if (!validation.success) {
+      console.log("Validation error:", validation.error);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format",
+        errors: validation.error.errors,
+      });
+    }
+
+    const { phone } = validation.data;
+    console.log("Validated phone:", phone);
 
     // Send OTP via SMS
     const result = await smsService.sendOTP(phone);
+    console.log("SMS service result:", result);
 
     if (result.success && result.otp) {
       // Store OTP session
@@ -37,9 +51,10 @@ export const sendOTP: RequestHandler = async (req, res) => {
         ...(process.env.NODE_ENV === "development" && { otp: result.otp }),
       });
     } else {
+      console.log("SMS service failed:", result);
       res.status(400).json({
         success: false,
-        message: result.message,
+        message: result.message || "Failed to send OTP",
       });
     }
   } catch (error) {
