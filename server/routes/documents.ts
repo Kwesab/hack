@@ -48,7 +48,7 @@ export const createRequest: RequestHandler = async (req, res) => {
       attestation: 20,
     };
 
-    const request = db.createRequest({
+    const request = await db.createRequest({
       userId,
       type: requestData.type,
       subType: requestData.subType || "",
