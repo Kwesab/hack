@@ -291,7 +291,14 @@ export const adminGenerateDocument: RequestHandler = async (req, res) => {
       });
     }
 
-    const adminUser = await db.getUserById(adminUserId);
+    // For demo purposes, accept either real admin user ID or demo admin access
+    let adminUser = await db.getUserById(adminUserId);
+
+    // If user not found by ID, try to find admin by email (for demo)
+    if (!adminUser && adminUserId === "admin_user") {
+      adminUser = await db.getUserByEmail("admin@ttu.edu.gh");
+    }
+
     if (!adminUser || adminUser.role !== "admin") {
       return res.status(403).json({
         success: false,
