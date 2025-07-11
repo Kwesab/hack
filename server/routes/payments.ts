@@ -175,38 +175,58 @@ export const verifyPayment: RequestHandler = async (req, res) => {
 
     try {
       // Verify payment with Paystack
-      let verificationResult;
+      console.log("🔄 Calling Paystack verification...");
+      const verificationResult = await paystackService.verifyPayment(reference);
 
-      if (
-        process.env.NODE_ENV === "development" ||
-        reference.includes("mock")
-      ) {
-        // Use mock verification for development
-        verificationResult = await paystackService.mockPaymentForDevelopment(
-          reference,
-          50,
-        );
-      } else {
-        verificationResult = await paystackService.verifyPayment(reference);
-      }
+      console.log("📊 Paystack verification result:", verificationResult);
 
       if (
         verificationResult.status &&
         verificationResult.data.status === "success"
       ) {
-        // Payment successful - update request status
-        // In real implementation, update your database here
+        console.log("✅ Payment verified successfully");
+
+        // Find the request associated with this payment reference
+        // The reference should contain the request info or we can find it by amount/customer
+        const userId = req.headers["x-user-id"] as string;
+        let requestToUpdate = null;
+
+        if (userId) {
+          console.log("🔍 Looking for user requests to update payment status");
+          const userRequests = await db.getRequestsByUserId(userId);
+
+          // Find unpaid request with matching amount
+          const amountInGHS = verificationResult.data.amount / 100;
+          requestToUpdate = userRequests.find(
+            (req) => !req.isPaid && req.amount === amountInGHS,
+          );
+
+          if (requestToUpdate) {
+            console.log("📝 Found request to update:", requestToUpdate.id);
+
+            // Update request as paid
+            await db.updateRequest(requestToUpdate.id, {
+              isPaid: true,
+              paymentMethod: "paystack",
+              paymentReference: reference,
+              status: "processing", // Move to processing after payment
+            });
+
+            console.log("✅ Request updated successfully");
+          } else {
+            console.log("⚠️ No matching request found for payment");
+          }
+        }
 
         return res.json({
           success: true,
           message: "Payment verified successfully",
-          data: {
-            reference,
-            amount: verificationResult.data.amount / 100, // Convert from kobo/pesewas
-            status: "success",
-            paidAt: verificationResult.data.paid_at,
-            gateway_response: verificationResult.data.gateway_response,
-          },
+          reference: reference,
+          amount: verificationResult.data.amount / 100, // Convert from pesewas to GHS
+          status: "success",
+          paidAt: verificationResult.data.paid_at,
+          customerEmail: verificationResult.data.customer.email,
+          requestId: requestToUpdate?.id,
         });
       } else {
         return res.status(400).json({
