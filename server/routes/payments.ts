@@ -5,8 +5,8 @@ import { db } from "../db/database";
 
 // Validation schemas
 const initializePaymentSchema = z.object({
-  requestId: z.string().min(1, "Request ID is required"),
-  amount: z.number().positive("Amount must be positive").optional(),
+  requestId: z.string().min(1, "Request ID is required").optional(),
+  amount: z.number().positive("Amount must be positive"),
   paymentMethod: z.enum([
     "paystack",
     "card",
@@ -14,11 +14,14 @@ const initializePaymentSchema = z.object({
     "bank_transfer",
     "cash_on_delivery",
   ]),
+  email: z.string().email("Valid email is required").optional(),
+  callback_url: z.string().url("Valid callback URL is required").optional(),
+  metadata: z.object({}).optional(),
 });
 
 const verifyPaymentSchema = z.object({
   reference: z.string().min(1, "Payment reference is required"),
-  requestId: z.string().min(1, "Request ID is required"),
+  requestId: z.string().min(1, "Request ID is required").optional(),
 });
 
 // Initialize payment
@@ -50,9 +53,10 @@ export const initializePayment: RequestHandler = async (req, res) => {
 
     console.log("✅ Validation successful:", validation.data);
 
-    const { requestId, paymentMethod } = validation.data;
+    const { requestId, paymentMethod, amount, email, callback_url, metadata } =
+      validation.data;
 
-    // Get user and request details
+    // Get user details
     const user = await db.getUserById(userId);
     if (!user) {
       console.log("❌ User not found:", userId);
@@ -64,22 +68,30 @@ export const initializePayment: RequestHandler = async (req, res) => {
 
     console.log("✅ User found:", user.id, user.name);
 
-    // Get the actual request from database
-    const requests = await db.getRequestsByUserId(userId);
-    const request = requests.find((req) => req.id === requestId);
+    // If requestId is provided, this is the old flow - get existing request
+    let requestAmount = amount;
+    if (requestId) {
+      const requests = await db.getRequestsByUserId(userId);
+      const request = requests.find((req) => req.id === requestId);
 
-    if (!request) {
-      console.log("❌ Request not found:", requestId);
-      return res.status(404).json({
-        success: false,
-        message: "Request not found",
-      });
+      if (!request) {
+        console.log("❌ Request not found:", requestId);
+        return res.status(404).json({
+          success: false,
+          message: "Request not found",
+        });
+      }
+
+      console.log(
+        "✅ Request found:",
+        request.id,
+        request.type,
+        request.amount,
+      );
+      requestAmount = request.amount;
     }
 
-    console.log("✅ Request found:", request.id, request.type, request.amount);
-
     if (paymentMethod === "cash_on_delivery") {
-      // For cash on delivery, mark as pending payment
       return res.json({
         success: true,
         message: "Cash on delivery option selected",
@@ -90,23 +102,34 @@ export const initializePayment: RequestHandler = async (req, res) => {
       });
     }
 
-    // All other payment methods (paystack, card, mobile_money, bank_transfer) use Paystack
+    // All other payment methods use Paystack
     if (
       ["paystack", "card", "mobile_money", "bank_transfer"].includes(
         paymentMethod,
       )
     ) {
-      // Generate payment reference
       const reference = paystackService.generatePaymentReference("TTU");
+
+      // Use provided email or user's email
+      const paymentEmail = email || user.email;
+
+      // Use provided callback URL or default
+      const callbackUrl =
+        callback_url ||
+        `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/callback`;
 
       try {
         console.log("🔄 Initializing Paystack payment...");
-        // Initialize Paystack payment
+        console.log("📧 Email:", paymentEmail);
+        console.log("💰 Amount:", requestAmount);
+        console.log("🔗 Callback:", callbackUrl);
+
         const paymentData = await paystackService.initializePayment(
-          user.email,
-          request.amount,
+          paymentEmail,
+          requestAmount,
           reference,
-          `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/callback`,
+          callbackUrl,
+          metadata,
         );
 
         console.log("✅ Paystack payment initialized:", paymentData);
@@ -115,11 +138,12 @@ export const initializePayment: RequestHandler = async (req, res) => {
           success: true,
           message: "Payment initialized successfully",
           authorization_url: paymentData.data.authorization_url,
+          reference: paymentData.data.reference,
           data: {
             authorization_url: paymentData.data.authorization_url,
             access_code: paymentData.data.access_code,
             reference: paymentData.data.reference,
-            amount: request.amount,
+            amount: requestAmount,
           },
         });
       } catch (error) {
@@ -130,11 +154,13 @@ export const initializePayment: RequestHandler = async (req, res) => {
           return res.json({
             success: true,
             message: "Mock payment initialized for development",
+            authorization_url: `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/success?reference=${reference}`,
+            reference: reference,
             data: {
-              authorization_url: `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/mock?reference=${reference}`,
+              authorization_url: `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/success?reference=${reference}`,
               access_code: "mock_access_code",
               reference: reference,
-              amount: mockRequest.amount,
+              amount: requestAmount,
             },
           });
         }
@@ -152,10 +178,11 @@ export const initializePayment: RequestHandler = async (req, res) => {
       message: "Invalid payment method",
     });
   } catch (error) {
-    console.error("Initialize Payment Error:", error);
+    console.error("❌ INITIALIZE PAYMENT ERROR:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: error.message,
     });
   }
 };
@@ -163,15 +190,20 @@ export const initializePayment: RequestHandler = async (req, res) => {
 // Verify payment
 export const verifyPayment: RequestHandler = async (req, res) => {
   try {
-    console.log("💳 VERIFY PAYMENT - Headers:", req.headers);
-    console.log("💳 VERIFY PAYMENT - Body:", req.body);
+    console.log("🔍 VERIFY PAYMENT - Headers:", req.headers);
+    console.log("🔍 VERIFY PAYMENT - Body:", req.body);
 
-    // For Paystack callback, we might only have reference, not requestId
-    const referenceOnly = z.object({
-      reference: z.string().min(1, "Payment reference is required"),
-    });
+    const userId = req.headers["x-user-id"] as string;
 
-    const validation = referenceOnly.safeParse(req.body);
+    if (!userId) {
+      console.log("❌ No userId provided");
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
+    const validation = verifyPaymentSchema.safeParse(req.body);
     if (!validation.success) {
       console.error("❌ Validation failed:", validation.error);
       return res.status(400).json({
@@ -181,73 +213,73 @@ export const verifyPayment: RequestHandler = async (req, res) => {
       });
     }
 
-    const { reference } = validation.data;
-    console.log("🔍 Verifying payment reference:", reference);
+    const { reference, requestId } = validation.data;
+
+    console.log("🔄 Verifying payment with Paystack...");
 
     try {
-      // Verify payment with Paystack
-      console.log("🔄 Calling Paystack verification...");
       const verificationResult = await paystackService.verifyPayment(reference);
 
-      console.log("📊 Paystack verification result:", verificationResult);
+      console.log("✅ Payment verification result:", verificationResult);
 
-      if (
-        verificationResult.status &&
-        verificationResult.data.status === "success"
-      ) {
-        console.log("✅ Payment verified successfully");
-
-        // Find the request associated with this payment reference
-        // The reference should contain the request info or we can find it by amount/customer
-        const userId = req.headers["x-user-id"] as string;
-        let requestToUpdate = null;
-
-        if (userId) {
-          console.log("🔍 Looking for user requests to update payment status");
-          const userRequests = await db.getRequestsByUserId(userId);
-
-          // Find unpaid request with matching amount
-          const amountInGHS = verificationResult.data.amount / 100;
-          requestToUpdate = userRequests.find(
-            (req) => !req.isPaid && req.amount === amountInGHS,
-          );
-
-          if (requestToUpdate) {
-            console.log("📝 Found request to update:", requestToUpdate.id);
-
-            // Update request as paid
-            await db.updateRequest(requestToUpdate.id, {
-              isPaid: true,
-              paymentMethod: "paystack",
-              paymentReference: reference,
-              status: "processing", // Move to processing after payment
-            });
-
-            console.log("✅ Request updated successfully");
-          } else {
-            console.log("⚠️ No matching request found for payment");
-          }
+      if (verificationResult.data.status === "success") {
+        // Payment successful
+        if (requestId) {
+          // Update existing request if requestId provided
+          await db.updateRequest(requestId, {
+            isPaid: true,
+            paymentReference: reference,
+            paymentMethod: "paystack",
+            status: "processing",
+          });
         }
 
         return res.json({
           success: true,
           message: "Payment verified successfully",
-          reference: reference,
-          amount: verificationResult.data.amount / 100, // Convert from pesewas to GHS
-          status: "success",
-          paidAt: verificationResult.data.paid_at,
-          customerEmail: verificationResult.data.customer.email,
-          requestId: requestToUpdate?.id,
+          payment_verified: true,
+          amount: verificationResult.data.amount,
+          reference: verificationResult.data.reference,
+          status: verificationResult.data.status,
+          customer: verificationResult.data.customer,
+          metadata: verificationResult.data.metadata,
         });
       } else {
-        return res.status(400).json({
+        return res.json({
           success: false,
           message: "Payment verification failed",
-          data: verificationResult.data,
+          payment_verified: false,
+          status: verificationResult.data.status,
         });
       }
     } catch (error) {
-      console.error("Payment verification error:", error);
+      console.error("Paystack verification error:", error);
+
+      // Mock verification for development
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔧 Using mock verification for development");
+
+        if (requestId) {
+          await db.updateRequest(requestId, {
+            isPaid: true,
+            paymentReference: reference,
+            paymentMethod: "paystack",
+            status: "processing",
+          });
+        }
+
+        return res.json({
+          success: true,
+          message: "Mock payment verification successful",
+          payment_verified: true,
+          amount: 5000, // Mock amount in kobo
+          reference: reference,
+          status: "success",
+          customer: { email: "mock@example.com" },
+          metadata: {},
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: "Payment verification failed",
@@ -255,10 +287,11 @@ export const verifyPayment: RequestHandler = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Verify Payment Error:", error);
+    console.error("❌ VERIFY PAYMENT ERROR:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: error.message,
     });
   }
 };
@@ -276,39 +309,23 @@ export const getPaymentStatus: RequestHandler = async (req, res) => {
     }
 
     try {
-      let verificationResult;
-
-      if (
-        process.env.NODE_ENV === "development" ||
-        reference.includes("mock")
-      ) {
-        verificationResult = await paystackService.mockPaymentForDevelopment(
-          reference,
-          50,
-        );
-      } else {
-        verificationResult = await paystackService.verifyPayment(reference);
-      }
+      const verificationResult = await paystackService.verifyPayment(reference);
 
       return res.json({
         success: true,
-        data: {
-          reference,
-          status: verificationResult.data.status,
-          amount: verificationResult.data.amount / 100,
-          gateway_response: verificationResult.data.gateway_response,
-          paid_at: verificationResult.data.paid_at,
-        },
+        data: verificationResult.data,
       });
     } catch (error) {
-      console.error("Get payment status error:", error);
-      return res.status(404).json({
+      console.error("Payment status check error:", error);
+
+      return res.status(400).json({
         success: false,
-        message: "Payment not found or verification failed",
+        message: "Failed to check payment status",
+        error: error.message,
       });
     }
   } catch (error) {
-    console.error("Get Payment Status Error:", error);
+    console.error("❌ GET PAYMENT STATUS ERROR:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -316,11 +333,10 @@ export const getPaymentStatus: RequestHandler = async (req, res) => {
   }
 };
 
-// Refund payment (admin only)
+// Refund payment
 export const refundPayment: RequestHandler = async (req, res) => {
   try {
     const { reference } = req.params;
-    const { reason } = req.body;
 
     if (!reference) {
       return res.status(400).json({
@@ -329,24 +345,15 @@ export const refundPayment: RequestHandler = async (req, res) => {
       });
     }
 
-    try {
-      const refundResult = await paystackService.refundPayment(reference);
+    // Implementation for refunds would go here
+    // This would typically involve calling Paystack's refund API
 
-      return res.json({
-        success: true,
-        message: "Refund processed successfully",
-        data: refundResult.data,
-      });
-    } catch (error) {
-      console.error("Refund error:", error);
-      return res.status(400).json({
-        success: false,
-        message: "Refund failed",
-        error: error.message,
-      });
-    }
+    return res.json({
+      success: false,
+      message: "Refund functionality not yet implemented",
+    });
   } catch (error) {
-    console.error("Refund Payment Error:", error);
+    console.error("❌ REFUND PAYMENT ERROR:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
