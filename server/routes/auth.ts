@@ -5,7 +5,11 @@ import { db } from "../models";
 
 // Validation schemas
 const phoneSchema = z.object({
-  phone: z.string().min(10, "Invalid phone number"),
+  phone: z
+    .string()
+    .min(10, "Phone number must be at least 10 digits")
+    .max(15, "Phone number must be at most 15 digits")
+    .regex(/^[0-9+\-\s()]*$/, "Phone number contains invalid characters"),
 });
 
 const verifyOTPSchema = z.object({
