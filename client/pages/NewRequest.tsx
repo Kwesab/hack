@@ -112,7 +112,8 @@ export default function NewRequest() {
     ) {
       toast({
         title: "Missing Information",
-        description: "Please provide delivery address for physical delivery",
+        description:
+          "Please provide delivery address for courier/cash delivery",
         variant: "destructive",
       });
       return;
