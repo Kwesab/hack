@@ -27,15 +27,8 @@ class SMSService {
       console.log(`Attempting to send SMS to ${formattedPhone}`);
       console.log(`SMS message: ${message}`);
 
-      // In development mode, simulate success
-      if (process.env.NODE_ENV === "development") {
-        console.log("Development mode: Simulating SMS success");
-        return {
-          success: true,
-          message: "SMS sent successfully (development mode)",
-          data: { messageId: `dev_${Date.now()}` },
-        };
-      }
+      // Force real SMS sending even in development
+      console.log("Sending real SMS via smsnotifygh API...");
 
       const response = await fetch(`${this.baseUrl}/send`, {
         method: "POST",
