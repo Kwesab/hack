@@ -67,5 +67,11 @@ export function createServer() {
   app.get("/api/files/:fileName", getFile);
   app.put("/api/admin/verify-ghana-card/:userId", verifyGhanaCard);
 
+  // Document generation routes
+  app.get("/api/generate/document/:requestId", generateDocument);
+  app.get("/api/generate/pdf/:requestId", generatePDF);
+  app.get("/api/generate/preview/:requestId", previewDocument);
+  app.get("/api/generate/info/:requestId", getDocumentInfo);
+
   return app;
 }
