@@ -163,11 +163,23 @@ class Database {
 
   // Initialize with some sample data
   init() {
-    // Create a sample user
+    // Create sample admin user
+    const adminUser = this.createUser({
+      email: "admin@ttu.edu.gh",
+      phone: "233501111111",
+      name: "Admin User",
+      password: "admin123",
+      role: "admin",
+      isVerified: true,
+    });
+
+    // Create a sample student user
     const sampleUser = this.createUser({
+      email: "john.doe@student.ttu.edu.gh",
       phone: "233501234567",
       name: "John Doe",
-      email: "john.doe@student.ttu.edu.gh",
+      password: "student123",
+      role: "student",
       studentId: "TTU/CS/2020/001",
       isVerified: true,
       ghanaCard: {
@@ -175,6 +187,17 @@ class Database {
         imageUrl: "/uploads/ghana-card-sample.jpg",
         verified: true,
       },
+    });
+
+    // Create a student without Ghana card
+    this.createUser({
+      email: "jane.smith@student.ttu.edu.gh",
+      phone: "233502345678",
+      name: "Jane Smith",
+      password: "student123",
+      role: "student",
+      studentId: "TTU/IT/2021/002",
+      isVerified: true,
     });
 
     // Create sample requests
