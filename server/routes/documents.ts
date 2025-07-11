@@ -22,6 +22,9 @@ const updateRequestSchema = z.object({
 // Create new document request
 export const createRequest: RequestHandler = async (req, res) => {
   try {
+    console.log("📝 CREATE REQUEST - Headers:", req.headers);
+    console.log("📝 CREATE REQUEST - Body:", req.body);
+
     const userId = req.headers["x-user-id"] as string;
 
     if (!userId) {
