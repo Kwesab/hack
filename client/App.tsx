@@ -21,6 +21,7 @@ import UploadGhanaCard from "./pages/UploadGhanaCard";
 import PaymentCallback from "./pages/PaymentCallback";
 import PaystackCallback from "./pages/PaystackCallback";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import DocumentTest from "./pages/DocumentTest";
 import EnhancedNewRequest from "./pages/EnhancedNewRequest";
 import UpdatedLogin from "./pages/UpdatedLogin";
 import NotFound from "./pages/NotFound";
