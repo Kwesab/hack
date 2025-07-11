@@ -1,4 +1,3 @@
-phone -> OTP verification">
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,12 +22,10 @@ import {
   Shield,
   ArrowLeft,
   CheckCircle,
-  AlertCircle,
   Eye,
   EyeOff,
   Mail,
   Lock,
-  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,36 +44,50 @@ export default function UpdatedLogin() {
   const [nextStep, setNextStep] = useState<any>(null);
   const navigate = useNavigate();
 
+  // Mock credentials for testing
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/verify-credentials", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      // Mock verification - check against our test users
+      const testUsers = [
+        {
+          email: "admin@ttu.edu.gh",
+          password: "admin123",
+          name: "Admin User",
+          role: "admin",
+          phone: "233501111111",
         },
-        body: JSON.stringify({ email, password }),
-      });
+        {
+          email: "john.doe@student.ttu.edu.gh",
+          password: "student123",
+          name: "John Doe",
+          role: "student",
+          phone: "233501234567",
+        },
+        {
+          email: "test.student@student.ttu.edu.gh",
+          password: "student123",
+          name: "Test Student",
+          role: "student",
+          phone: "233503456789",
+        },
+      ];
 
-      const result = await response.json();
+      const user = testUsers.find(
+        (u) => u.email === email && u.password === password,
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          result.message || `HTTP error! status: ${response.status}`,
-        );
-      }
-
-      if (result.success) {
-        setUserInfo(result.user);
+      if (user) {
+        setUserInfo(user);
         setStep("phone");
       } else {
-        alert(result.message || "Invalid credentials");
+        alert("Invalid email or password");
       }
     } catch (error) {
       console.error("Credentials verification error:", error);
-      alert(error.message || "Network error. Please try again.");
+      alert("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -87,24 +98,25 @@ export default function UpdatedLogin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/send-otp-login", {
+      // Verify phone matches user's registered phone
+      if (
+        phoneNumber.replace(/\s/g, "") !== userInfo.phone.replace("233", "")
+      ) {
+        alert("Phone number doesn't match our records");
+        setIsLoading(false);
+        return;
+      }
+
+      // Send OTP using existing endpoint
+      const response = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          email: userInfo.email,
-          phone: phoneNumber 
-        }),
+        body: JSON.stringify({ phone: phoneNumber }),
       });
 
       const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.message || `HTTP error! status: ${response.status}`,
-        );
-      }
 
       if (result.success) {
         setStep("otp");
@@ -125,7 +137,7 @@ export default function UpdatedLogin() {
       }
     } catch (error) {
       console.error("Send OTP error:", error);
-      alert(error.message || "Network error. Please try again.");
+      alert("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -136,45 +148,42 @@ export default function UpdatedLogin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/verify-otp-login", {
+      // Verify OTP using existing endpoint
+      const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          email: userInfo.email,
-          phone: phoneNumber,
-          otp 
-        }),
+        body: JSON.stringify({ phone: phoneNumber, otp }),
       });
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          result.message || `HTTP error! status: ${response.status}`,
-        );
-      }
-
       if (result.success) {
         // Store user info
         localStorage.setItem("userId", result.user.id);
-        localStorage.setItem("userEmail", result.user.email);
-        localStorage.setItem("userName", result.user.name);
-        localStorage.setItem("userRole", result.user.role);
+        localStorage.setItem("userEmail", userInfo.email);
+        localStorage.setItem("userName", userInfo.name);
+        localStorage.setItem("userRole", userInfo.role);
 
-        setNextStep(result.nextStep);
+        // Determine next step based on role
+        const nextRoute = userInfo.role === "admin" ? "/admin" : "/dashboard";
+        setNextStep({
+          route: nextRoute,
+          message: `Redirecting to ${userInfo.role} dashboard...`,
+        });
+
         setStep("success");
 
         setTimeout(() => {
-          navigate(result.nextStep.route);
+          navigate(nextRoute);
         }, 2000);
       } else {
         alert(result.message || "Invalid OTP");
       }
     } catch (error) {
       console.error("Verify OTP error:", error);
-      alert(error.message || "Network error. Please try again.");
+      alert("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -270,8 +279,11 @@ export default function UpdatedLogin() {
                   Enter Phone Number
                 </CardTitle>
                 <CardDescription>
-                  Welcome back, <span className="font-medium text-ttu-navy">{userInfo?.name}</span>! 
-                  Enter your phone number for verification
+                  Welcome back,{" "}
+                  <span className="font-medium text-ttu-navy">
+                    {userInfo?.name}
+                  </span>
+                  ! Enter your phone number for verification
                 </CardDescription>
               </>
             )}
@@ -283,7 +295,9 @@ export default function UpdatedLogin() {
                 </CardTitle>
                 <CardDescription>
                   We sent a 6-digit code to{" "}
-                  <span className="font-medium text-ttu-navy">{phoneNumber}</span>
+                  <span className="font-medium text-ttu-navy">
+                    {phoneNumber}
+                  </span>
                 </CardDescription>
               </>
             )}
@@ -371,12 +385,22 @@ export default function UpdatedLogin() {
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-ttu-navy" />
                     <span className="text-sm font-medium text-ttu-navy">
-                      Multi-Step Authentication
+                      Test Credentials
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Email verification → Phone verification → SMS OTP
-                  </p>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>
+                      <strong>Admin:</strong> admin@ttu.edu.gh / admin123
+                    </p>
+                    <p>
+                      <strong>Student:</strong> john.doe@student.ttu.edu.gh /
+                      student123
+                    </p>
+                    <p>
+                      <strong>Test Student:</strong>{" "}
+                      test.student@student.ttu.edu.gh / student123
+                    </p>
+                  </div>
                 </div>
               </form>
             )}
@@ -402,6 +426,10 @@ export default function UpdatedLogin() {
                       required
                     />
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Phone numbers: Admin (50 111 1111), John (50 123 4567), Test
+                    (50 345 6789)
+                  </p>
                 </div>
 
                 <Button
@@ -442,6 +470,21 @@ export default function UpdatedLogin() {
                       <InputOTPSlot index={5} />
                     </InputOTPGroup>
                   </InputOTP>
+                </div>
+
+                <div className="text-center">
+                  {countdown > 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Resend code in{" "}
+                      <span className="font-medium text-ttu-navy">
+                        {countdown}s
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Check server logs for OTP code
+                    </p>
+                  )}
                 </div>
 
                 <Button
