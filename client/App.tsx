@@ -13,6 +13,7 @@ import NewRequest from "./pages/NewRequest";
 import UploadDocuments from "./pages/UploadDocuments";
 import TrackRequests from "./pages/TrackRequests";
 import AdminDashboard from "./pages/AdminDashboard";
+import HODDashboard from "./pages/HODDashboard";
 import TestOTP from "./pages/TestOTP";
 import ApiTest from "./pages/ApiTest";
 import NewLogin from "./pages/NewLogin";
