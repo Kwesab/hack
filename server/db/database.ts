@@ -190,8 +190,8 @@ class DatabaseService {
         // Add sample admin
         await this.pool.query(
           `
-          INSERT INTO users (id, email, phone, name, password, role, is_verified, created_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+          INSERT INTO users (id, email, phone, name, password, role, department, is_verified, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
         `,
           [
             `admin_${Date.now()}`,
@@ -200,6 +200,43 @@ class DatabaseService {
             "Admin User",
             "admin123",
             "admin",
+            "Administration",
+            true,
+          ],
+        );
+
+        // Add HOD for Computer Science Department
+        await this.pool.query(
+          `
+          INSERT INTO users (id, email, phone, name, password, role, department, is_verified, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        `,
+          [
+            `hod_cs_${Date.now()}`,
+            "hod.cs@ttu.edu.gh",
+            "0245384940",
+            "Dr. CS Department Head",
+            "hod123",
+            "hod",
+            "Computer Science",
+            true,
+          ],
+        );
+
+        // Add HOD for Electrical Engineering Department
+        await this.pool.query(
+          `
+          INSERT INTO users (id, email, phone, name, password, role, department, is_verified, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        `,
+          [
+            `hod_ee_${Date.now()}`,
+            "hod.ee@ttu.edu.gh",
+            "0233456789",
+            "Dr. EE Department Head",
+            "hod123",
+            "hod",
+            "Electrical Engineering",
             true,
           ],
         );
@@ -207,8 +244,8 @@ class DatabaseService {
         // Add sample student with Ghana card
         await this.pool.query(
           `
-          INSERT INTO users (id, email, phone, name, password, role, student_id, is_verified, ghana_card, created_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+          INSERT INTO users (id, email, phone, name, password, role, department, student_id, is_verified, ghana_card, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
         `,
           [
             `student_${Date.now()}`,
@@ -217,6 +254,7 @@ class DatabaseService {
             "John Doe",
             "student123",
             "student",
+            "Computer Science",
             "TTU/CS/2020/001",
             true,
             JSON.stringify({
@@ -230,8 +268,8 @@ class DatabaseService {
         // Add student with unverified Ghana card
         await this.pool.query(
           `
-          INSERT INTO users (id, email, phone, name, password, role, student_id, is_verified, ghana_card, created_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+          INSERT INTO users (id, email, phone, name, password, role, department, student_id, is_verified, ghana_card, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
         `,
           [
             `student_pending_${Date.now()}`,
@@ -240,7 +278,8 @@ class DatabaseService {
             "Test Student",
             "student123",
             "student",
-            "TTU/CS/2022/003",
+            "Electrical Engineering",
+            "TTU/EE/2022/003",
             true,
             JSON.stringify({
               number: "GHA-123456789-2",
@@ -266,23 +305,39 @@ class DatabaseService {
       name: "Admin User",
       password: "admin123",
       role: "admin",
+      department: "Administration",
       isVerified: true,
       createdAt: new Date(),
     };
     this.users.set(adminUser.id, adminUser);
 
-    // Create additional admin users
-    const seniorAdmin: User = {
-      id: `admin_senior_${Date.now()}`,
-      email: "senior.admin@ttu.edu.gh",
+    // Create HOD for Computer Science
+    const hodCS: User = {
+      id: `hod_cs_${Date.now()}`,
+      email: "hod.cs@ttu.edu.gh",
       phone: "0245384940",
-      name: "Senior Admin",
-      password: "admin123",
-      role: "admin",
+      name: "Dr. CS Department Head",
+      password: "hod123",
+      role: "hod",
+      department: "Computer Science",
       isVerified: true,
       createdAt: new Date(),
     };
-    this.users.set(seniorAdmin.id, seniorAdmin);
+    this.users.set(hodCS.id, hodCS);
+
+    // Create HOD for Electrical Engineering
+    const hodEE: User = {
+      id: `hod_ee_${Date.now()}`,
+      email: "hod.ee@ttu.edu.gh",
+      phone: "0233456789",
+      name: "Dr. EE Department Head",
+      password: "hod123",
+      role: "hod",
+      department: "Electrical Engineering",
+      isVerified: true,
+      createdAt: new Date(),
+    };
+    this.users.set(hodEE.id, hodEE);
 
     // Create student with verified Ghana Card
     const studentUser: User = {
@@ -292,6 +347,7 @@ class DatabaseService {
       name: "John Doe",
       password: "student123",
       role: "student",
+      department: "Computer Science",
       studentId: "TTU/CS/2020/001",
       isVerified: true,
       ghanaCard: {
@@ -311,7 +367,8 @@ class DatabaseService {
       name: "Test Student",
       password: "student123",
       role: "student",
-      studentId: "TTU/CS/2022/003",
+      department: "Electrical Engineering",
+      studentId: "TTU/EE/2022/003",
       isVerified: true,
       ghanaCard: {
         number: "GHA-123456789-2",
@@ -330,7 +387,8 @@ class DatabaseService {
       name: "Jane Smith",
       password: "student123",
       role: "student",
-      studentId: "TTU/IT/2021/002",
+      department: "Mechanical Engineering",
+      studentId: "TTU/ME/2021/002",
       isVerified: true,
       createdAt: new Date(),
     };
@@ -345,6 +403,7 @@ class DatabaseService {
         name: "Michael Asante",
         password: "student123",
         role: "student" as const,
+        department: "Computer Science",
         studentId: "TTU/CS/2021/004",
         isVerified: true,
         ghanaCard: {
@@ -361,6 +420,7 @@ class DatabaseService {
         name: "Sarah Mensah",
         password: "student123",
         role: "student" as const,
+        department: "Electrical Engineering",
         studentId: "TTU/EE/2020/005",
         isVerified: true,
         ghanaCard: {
@@ -377,6 +437,7 @@ class DatabaseService {
         name: "Kwame Osei",
         password: "student123",
         role: "student" as const,
+        department: "Mechanical Engineering",
         studentId: "TTU/ME/2019/006",
         isVerified: true,
         createdAt: new Date(),
@@ -387,11 +448,12 @@ class DatabaseService {
       this.users.set(student.id, student);
     });
 
-    // Create sample document requests
+    // Create sample document requests with department mapping
     const sampleRequests = [
       {
         id: `req_${Date.now()}_1`,
         userId: studentUser.id,
+        userDepartment: "Computer Science",
         type: "transcript" as const,
         subType: "undergraduate",
         status: "completed" as const,
@@ -410,6 +472,7 @@ class DatabaseService {
       {
         id: `req_${Date.now()}_2`,
         userId: testStudent.id,
+        userDepartment: "Electrical Engineering",
         type: "certificate" as const,
         subType: "degree",
         status: "processing" as const,
@@ -427,6 +490,7 @@ class DatabaseService {
       {
         id: `req_${Date.now()}_3`,
         userId: newStudent.id,
+        userDepartment: "Mechanical Engineering",
         type: "attestation" as const,
         status: "pending" as const,
         deliveryMethod: "cash_on_delivery" as const,
@@ -448,7 +512,7 @@ class DatabaseService {
       "📊 In-memory database initialized with comprehensive sample data",
     );
     console.log(
-      `👥 Created ${this.users.size} users (2 admins, ${this.users.size - 2} students)`,
+      `👥 Created ${this.users.size} users (1 admin, 2 HODs, ${this.users.size - 3} students)`,
     );
     console.log(`📄 Created ${this.requests.size} sample document requests`);
   }
@@ -465,8 +529,8 @@ class DatabaseService {
       try {
         await this.pool.query(
           `
-          INSERT INTO users (id, email, phone, name, password, role, student_id, is_verified, ghana_card, created_at, updated_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+          INSERT INTO users (id, email, phone, name, password, role, department, student_id, is_verified, ghana_card, digital_signature, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
         `,
           [
             user.id,
@@ -475,9 +539,11 @@ class DatabaseService {
             user.name,
             user.password,
             user.role,
+            user.department || null,
             user.studentId || null,
             user.isVerified,
             user.ghanaCard ? JSON.stringify(user.ghanaCard) : null,
+            user.digitalSignature || null,
           ],
         );
       } catch (error) {
@@ -509,9 +575,11 @@ class DatabaseService {
             name: row.name,
             password: row.password,
             role: row.role,
+            department: row.department,
             studentId: row.student_id,
             isVerified: row.is_verified,
             ghanaCard: row.ghana_card,
+            digitalSignature: row.digital_signature,
             createdAt: new Date(row.created_at),
           };
         }
@@ -540,9 +608,11 @@ class DatabaseService {
             name: row.name,
             password: row.password,
             role: row.role,
+            department: row.department,
             studentId: row.student_id,
             isVerified: row.is_verified,
             ghanaCard: row.ghana_card,
+            digitalSignature: row.digital_signature,
             createdAt: new Date(row.created_at),
           };
         }
@@ -571,9 +641,11 @@ class DatabaseService {
             name: row.name,
             password: row.password,
             role: row.role,
+            department: row.department,
             studentId: row.student_id,
             isVerified: row.is_verified,
             ghanaCard: row.ghana_card,
+            digitalSignature: row.digital_signature,
             createdAt: new Date(row.created_at),
           };
         }
@@ -603,6 +675,10 @@ class DatabaseService {
           setClause.push(`password = $${paramIndex++}`);
           values.push(updates.password);
         }
+        if (updates.department !== undefined) {
+          setClause.push(`department = $${paramIndex++}`);
+          values.push(updates.department);
+        }
         if (updates.isVerified !== undefined) {
           setClause.push(`is_verified = $${paramIndex++}`);
           values.push(updates.isVerified);
@@ -610,6 +686,10 @@ class DatabaseService {
         if (updates.ghanaCard !== undefined) {
           setClause.push(`ghana_card = $${paramIndex++}`);
           values.push(JSON.stringify(updates.ghanaCard));
+        }
+        if (updates.digitalSignature !== undefined) {
+          setClause.push(`digital_signature = $${paramIndex++}`);
+          values.push(updates.digitalSignature);
         }
 
         setClause.push(`updated_at = NOW()`);
@@ -633,9 +713,11 @@ class DatabaseService {
             name: row.name,
             password: row.password,
             role: row.role,
+            department: row.department,
             studentId: row.student_id,
             isVerified: row.is_verified,
             ghanaCard: row.ghana_card,
+            digitalSignature: row.digital_signature,
             createdAt: new Date(row.created_at),
           };
         }
@@ -667,9 +749,11 @@ class DatabaseService {
           name: row.name,
           password: row.password,
           role: row.role,
+          department: row.department,
           studentId: row.student_id,
           isVerified: row.is_verified,
           ghanaCard: row.ghana_card,
+          digitalSignature: row.digital_signature,
           createdAt: new Date(row.created_at),
         }));
       } catch (error) {
@@ -696,9 +780,11 @@ class DatabaseService {
           name: row.name,
           password: row.password,
           role: row.role,
+          department: row.department,
           studentId: row.student_id,
           isVerified: row.is_verified,
           ghanaCard: row.ghana_card,
+          digitalSignature: row.digital_signature,
           createdAt: new Date(row.created_at),
         }));
       } catch (error) {
@@ -786,7 +872,7 @@ class DatabaseService {
     this.otpSessions.delete(phone);
   }
 
-  // Document request methods - simplified for now
+  // Document request methods
   async createRequest(
     requestData: Omit<DocumentRequest, "id" | "createdAt" | "updatedAt">,
   ): Promise<DocumentRequest> {
@@ -810,6 +896,14 @@ class DatabaseService {
     return Array.from(this.requests.values());
   }
 
+  async getRequestsByDepartment(
+    department: string,
+  ): Promise<DocumentRequest[]> {
+    return Array.from(this.requests.values()).filter(
+      (req) => req.userDepartment === department,
+    );
+  }
+
   async updateRequest(
     requestId: string,
     updates: Partial<DocumentRequest>,
@@ -822,11 +916,49 @@ class DatabaseService {
         updatedAt: new Date(),
         ...(updates.status === "completed" &&
           !request.completedAt && { completedAt: new Date() }),
+        ...(updates.status === "confirmed" ||
+          (updates.status === "rejected" && { reviewedAt: new Date() })),
       };
       this.requests.set(requestId, updatedRequest);
       return updatedRequest;
     }
     return undefined;
+  }
+
+  async getRequestById(
+    requestId: string,
+  ): Promise<DocumentRequest | undefined> {
+    return this.requests.get(requestId);
+  }
+
+  // Department-related methods
+  async getDepartments(): Promise<string[]> {
+    const users = await this.getAllUsers();
+    const departments = new Set<string>();
+
+    users.forEach((user) => {
+      if (user.department) {
+        departments.add(user.department);
+      }
+    });
+
+    return Array.from(departments).sort();
+  }
+
+  async getHODsByDepartment(): Promise<Record<string, User[]>> {
+    const users = await this.getAllUsers();
+    const hodsByDept: Record<string, User[]> = {};
+
+    users
+      .filter((user) => user.role === "hod" && user.department)
+      .forEach((hod) => {
+        if (!hodsByDept[hod.department!]) {
+          hodsByDept[hod.department!] = [];
+        }
+        hodsByDept[hod.department!].push(hod);
+      });
+
+    return hodsByDept;
   }
 }
 
