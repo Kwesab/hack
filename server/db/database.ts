@@ -238,7 +238,7 @@ class DatabaseService {
   }
 
   private initializeInMemoryData() {
-    // Create sample admin user
+    // Create comprehensive admin user
     const adminUser: User = {
       id: `admin_${Date.now()}`,
       email: "admin@ttu.edu.gh",
@@ -251,7 +251,20 @@ class DatabaseService {
     };
     this.users.set(adminUser.id, adminUser);
 
-    // Create sample student with Ghana Card
+    // Create additional admin users
+    const seniorAdmin: User = {
+      id: `admin_senior_${Date.now()}`,
+      email: "senior.admin@ttu.edu.gh",
+      phone: "233501111122",
+      name: "Senior Admin",
+      password: "admin123",
+      role: "admin",
+      isVerified: true,
+      createdAt: new Date(),
+    };
+    this.users.set(seniorAdmin.id, seniorAdmin);
+
+    // Create student with verified Ghana Card
     const studentUser: User = {
       id: `student_${Date.now()}`,
       email: "john.doe@student.ttu.edu.gh",
@@ -289,7 +302,135 @@ class DatabaseService {
     };
     this.users.set(testStudent.id, testStudent);
 
-    console.log("📊 In-memory database initialized with sample data");
+    // Create student without Ghana card
+    const newStudent: User = {
+      id: `student_new_${Date.now()}`,
+      email: "jane.smith@student.ttu.edu.gh",
+      phone: "233502345678",
+      name: "Jane Smith",
+      password: "student123",
+      role: "student",
+      studentId: "TTU/IT/2021/002",
+      isVerified: true,
+      createdAt: new Date(),
+    };
+    this.users.set(newStudent.id, newStudent);
+
+    // Create additional test students
+    const moreStudents = [
+      {
+        id: `student_cs_${Date.now()}_1`,
+        email: "michael.asante@student.ttu.edu.gh",
+        phone: "233504567890",
+        name: "Michael Asante",
+        password: "student123",
+        role: "student" as const,
+        studentId: "TTU/CS/2021/004",
+        isVerified: true,
+        ghanaCard: {
+          number: "GHA-234567890-1",
+          imageUrl: "/uploads/ghana-card-michael.jpg",
+          verified: true,
+        },
+        createdAt: new Date(),
+      },
+      {
+        id: `student_ee_${Date.now()}_2`,
+        email: "sarah.mensah@student.ttu.edu.gh",
+        phone: "233505678901",
+        name: "Sarah Mensah",
+        password: "student123",
+        role: "student" as const,
+        studentId: "TTU/EE/2020/005",
+        isVerified: true,
+        ghanaCard: {
+          number: "GHA-345678901-2",
+          imageUrl: "/uploads/ghana-card-sarah.jpg",
+          verified: false,
+        },
+        createdAt: new Date(),
+      },
+      {
+        id: `student_me_${Date.now()}_3`,
+        email: "kwame.osei@student.ttu.edu.gh",
+        phone: "233506789012",
+        name: "Kwame Osei",
+        password: "student123",
+        role: "student" as const,
+        studentId: "TTU/ME/2019/006",
+        isVerified: true,
+        createdAt: new Date(),
+      },
+    ];
+
+    moreStudents.forEach((student) => {
+      this.users.set(student.id, student);
+    });
+
+    // Create sample document requests
+    const sampleRequests = [
+      {
+        id: `req_${Date.now()}_1`,
+        userId: studentUser.id,
+        type: "transcript" as const,
+        subType: "undergraduate",
+        status: "completed" as const,
+        deliveryMethod: "digital" as const,
+        amount: 50,
+        isPaid: true,
+        paymentMethod: "paystack" as const,
+        paymentReference: "TTU_1234567890_abc",
+        documents: [],
+        notes: "Urgent request for job application",
+        downloadUrl: "/api/documents/download/req_sample_1",
+        createdAt: new Date(Date.now() - 86400000 * 2), // 2 days ago
+        updatedAt: new Date(Date.now() - 86400000), // 1 day ago
+        completedAt: new Date(Date.now() - 86400000), // 1 day ago
+      },
+      {
+        id: `req_${Date.now()}_2`,
+        userId: testStudent.id,
+        type: "certificate" as const,
+        subType: "degree",
+        status: "processing" as const,
+        deliveryMethod: "courier" as const,
+        deliveryAddress: "123 Main Street, Takoradi, Ghana",
+        amount: 55,
+        isPaid: true,
+        paymentMethod: "paystack" as const,
+        paymentReference: "TTU_1234567891_def",
+        documents: [],
+        notes: "Need for visa application",
+        createdAt: new Date(Date.now() - 86400000), // 1 day ago
+        updatedAt: new Date(),
+      },
+      {
+        id: `req_${Date.now()}_3`,
+        userId: newStudent.id,
+        type: "attestation" as const,
+        status: "pending" as const,
+        deliveryMethod: "cash_on_delivery" as const,
+        deliveryAddress: "456 University Road, Cape Coast, Ghana",
+        amount: 45,
+        isPaid: false,
+        documents: [],
+        notes: "Letter of attestation for employment",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    sampleRequests.forEach((request) => {
+      this.requests.set(request.id, request);
+    });
+
+    console.log(
+      "📊 In-memory database initialized with comprehensive sample data",
+    );
+    console.log(
+      `👥 Created ${this.users.size} users (2 admins, ${this.users.size - 2} students)`,
+    );
+    console.log(`📄 Created ${this.requests.size} sample document requests`);
   }
 
   // User methods
