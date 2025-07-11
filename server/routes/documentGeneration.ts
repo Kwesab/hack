@@ -186,7 +186,7 @@ export const previewDocument: RequestHandler = async (req, res) => {
 
     try {
       const pdfBuffer = await pdfGeneratorService.generateDocumentPDF(
-        "transcript",
+        request.type,
         documentData,
       );
 
