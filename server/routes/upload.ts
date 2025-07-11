@@ -194,7 +194,7 @@ export const verifyGhanaCard: RequestHandler = async (req, res) => {
 
     console.log(`Found user and Ghana Card, updating verification status...`);
 
-    const updatedUser = db.updateUser(userId, {
+    const updatedUser = await db.updateUser(userId, {
       ghanaCard: {
         ...user.ghanaCard,
         verified,
