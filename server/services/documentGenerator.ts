@@ -34,8 +34,7 @@ class DocumentGenerator {
     this.templates.set("transcript-undergraduate", {
       type: "transcript",
       subType: "undergraduate",
-      content: `
-<!DOCTYPE html>
+      content: `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -60,38 +59,19 @@ class DocumentGenerator {
 </head>
 <body>
     <div class="watermark">TTU OFFICIAL</div>
-    
     <div class="header">
         <div class="logo">🎓 TAKORADI TECHNICAL UNIVERSITY</div>
         <div class="subtitle">P.O. Box 256, Takoradi, Ghana</div>
         <div class="subtitle">Tel: +233-31-2022183 | Email: info@ttu.edu.gh</div>
     </div>
-
     <div class="document-title">OFFICIAL ACADEMIC TRANSCRIPT</div>
-
     <div class="student-info">
-        <div class="info-row">
-            <strong>Student Name:</strong>
-            <span>{{STUDENT_NAME}}</span>
-        </div>
-        <div class="info-row">
-            <strong>Student ID:</strong>
-            <span>{{STUDENT_ID}}</span>
-        </div>
-        <div class="info-row">
-            <strong>Program:</strong>
-            <span>{{PROGRAM}}</span>
-        </div>
-        <div class="info-row">
-            <strong>Date of Graduation:</strong>
-            <span>{{GRADUATION_DATE}}</span>
-        </div>
-        <div class="info-row">
-            <strong>Cumulative GPA:</strong>
-            <span>{{GPA}}</span>
-        </div>
+        <div class="info-row"><strong>Student Name:</strong><span>{{STUDENT_NAME}}</span></div>
+        <div class="info-row"><strong>Student ID:</strong><span>{{STUDENT_ID}}</span></div>
+        <div class="info-row"><strong>Program:</strong><span>{{PROGRAM}}</span></div>
+        <div class="info-row"><strong>Date of Graduation:</strong><span>{{GRADUATION_DATE}}</span></div>
+        <div class="info-row"><strong>Cumulative GPA:</strong><span>{{GPA}}</span></div>
     </div>
-
     <table class="grades-table">
         <thead>
             <tr>
@@ -102,11 +82,8 @@ class DocumentGenerator {
                 <th>Grade Points</th>
             </tr>
         </thead>
-        <tbody>
-            {{COURSE_RECORDS}}
-        </tbody>
+        <tbody>{{COURSE_RECORDS}}</tbody>
     </table>
-
     <div class="signature-section">
         <div class="signature-box">
             <div class="signature-line"></div>
@@ -114,7 +91,7 @@ class DocumentGenerator {
             <div>{{ISSUE_DATE}}</div>
         </div>
         <div style="text-align: center;">
-            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgc3Ryb2tlPSIjMWUzYThhIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KICA8dGV4dCB4PSI1MCIgeT0iNTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzFlM2E4YSI+VFRVPC90ZXh0Pgo8L3N2Zz4K" alt="TTU Seal" />
+            <div style="width: 80px; height: 80px; border: 2px solid #1e3a8a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #1e3a8a;">TTU</div>
             <div><strong>Official Seal</strong></div>
         </div>
         <div class="signature-box">
@@ -123,7 +100,6 @@ class DocumentGenerator {
             <div>{{ISSUE_DATE}}</div>
         </div>
     </div>
-
     <div class="footer">
         <p style="font-size: 12px; color: #666;">
             This is an official transcript issued by Takoradi Technical University.<br>
@@ -132,15 +108,14 @@ class DocumentGenerator {
         </p>
     </div>
 </body>
-</html>`;
+</html>`,
     });
 
     // Certificate template
     this.templates.set("certificate-degree", {
       type: "certificate",
       subType: "degree",
-      content: `
-<!DOCTYPE html>
+      content: `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -166,16 +141,13 @@ class DocumentGenerator {
 </head>
 <body>
     <div class="watermark">TTU OFFICIAL</div>
-    
     <div class="certificate">
         <div class="header">
             <div class="university-name">🎓 TAKORADI TECHNICAL UNIVERSITY</div>
             <div class="subtitle">Republic of Ghana</div>
             <div class="subtitle">Established 1968</div>
         </div>
-
         <div class="certificate-title">Certificate of Graduation</div>
-
         <div class="recipient-section">
             <div class="awarded-to">This is to certify that</div>
             <div class="recipient-name">{{STUDENT_NAME}}</div>
@@ -187,21 +159,22 @@ class DocumentGenerator {
                 privileges and responsibilities thereunto appertaining.
             </div>
         </div>
-
         <div class="date-box">
             <div style="font-size: 18px;">
                 Given at Takoradi this <strong>{{GRADUATION_DAY}}</strong> day of <strong>{{GRADUATION_MONTH}}</strong><br>
                 in the year of our Lord <strong>{{GRADUATION_YEAR}}</strong>
             </div>
         </div>
-
         <div class="signature-section">
             <div class="signature-box">
                 <div class="signature-line"></div>
                 <div><strong>Vice-Chancellor</strong></div>
             </div>
             <div class="seal">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSI1MCIgc3Ryb2tlPSIjMWUzYThhIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiLz4KICA8dGV4dCB4PSI2MCIgeT0iNTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzFlM2E4YSI+VFRVPC90ZXh0PgogIDx0ZXh0IHg9IjYwIiB5PSI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiMxZTNhOGEiPkdIQU5BPC90ZXh0Pgo8L3N2Zz4K" alt="University Seal" />
+                <div style="width: 120px; height: 120px; border: 4px solid #1e3a8a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #1e3a8a; flex-direction: column;">
+                    <div>TTU</div>
+                    <div style="font-size: 8px;">GHANA</div>
+                </div>
                 <div style="margin-top: 10px;"><strong>University Seal</strong></div>
             </div>
             <div class="signature-box">
@@ -209,22 +182,20 @@ class DocumentGenerator {
                 <div><strong>Registrar</strong></div>
             </div>
         </div>
-
         <div style="text-align: center; margin-top: 40px; font-size: 12px; color: #666;">
             Certificate ID: {{REQUEST_ID}} | Issued: {{ISSUE_DATE}}<br>
             For verification: registrar@ttu.edu.gh | +233-31-2022183
         </div>
     </div>
 </body>
-</html>`;
+</html>`,
     });
 
     // Attestation template
     this.templates.set("attestation-verification", {
       type: "attestation",
       subType: "verification",
-      content: `
-<!DOCTYPE html>
+      content: `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -246,7 +217,6 @@ class DocumentGenerator {
 </head>
 <body>
     <div class="watermark">TTU VERIFIED</div>
-    
     <div class="letterhead">
         <div class="university-name">🎓 TAKORADI TECHNICAL UNIVERSITY</div>
         <div class="address">
@@ -255,19 +225,14 @@ class DocumentGenerator {
             Tel: +233-31-2022183 | Email: registrar@ttu.edu.gh
         </div>
     </div>
-
     <div style="text-align: right; margin-bottom: 30px;">
         <strong>Date:</strong> {{ISSUE_DATE}}<br>
         <strong>Ref:</strong> TTU/REG/{{REQUEST_ID}}
     </div>
-
     <div class="document-title">Letter of Attestation</div>
-
     <div class="content">
         <p><strong>TO WHOM IT MAY CONCERN</strong></p>
-
         <p>This is to certify that the academic records and documents presented by the individual named below are authentic and have been verified by the Office of the Registrar, Takoradi Technical University.</p>
-
         <div class="student-details">
             <strong>Student Information:</strong><br>
             <strong>Full Name:</strong> {{STUDENT_NAME}}<br>
@@ -276,16 +241,11 @@ class DocumentGenerator {
             <strong>Period of Study:</strong> {{STUDY_PERIOD}}<br>
             <strong>Academic Status:</strong> {{ACADEMIC_STATUS}}
         </div>
-
         <p>The above-named individual was a bonafide student of this institution and has successfully completed the academic requirements for the program mentioned above. All transcripts, certificates, and related academic documents bearing the official seal and signature of this university are genuine and have been issued by the authorized office.</p>
-
         <p>This attestation is issued at the request of the student for {{ATTESTATION_PURPOSE}} and is valid for official use.</p>
-
         <p>Should you require any further verification or additional information, please do not hesitate to contact the Office of the Registrar.</p>
-
         <p>Thank you for your attention to this matter.</p>
     </div>
-
     <div class="signature-section">
         <div class="signature-box">
             <div class="signature-line"></div>
@@ -299,7 +259,6 @@ class DocumentGenerator {
         </div>
         <div style="clear: both;"></div>
     </div>
-
     <div class="reference">
         <hr style="margin: 40px 0 20px 0;">
         <p><strong>Verification Details:</strong><br>
@@ -309,7 +268,7 @@ class DocumentGenerator {
         Digital Signature: {{DIGITAL_SIGNATURE}}</p>
     </div>
 </body>
-</html>`;
+</html>`,
     });
   }
 
@@ -348,10 +307,15 @@ class DocumentGenerator {
         (new Date().getDate() > 10 && new Date().getDate() < 20
           ? "th"
           : ["th", "st", "nd", "rd"][new Date().getDate() % 10] || "th"),
-      "{{DEGREE_TITLE}}": additionalData?.degreeTitle || "Bachelor of Technology in Computer Science",
-      "{{STUDY_PERIOD}}": additionalData?.studyPeriod || "September 2020 - June 2024",
-      "{{ACADEMIC_STATUS}}": additionalData?.academicStatus || "Graduate in Good Standing",
-      "{{ATTESTATION_PURPOSE}}": additionalData?.purpose || "employment verification",
+      "{{DEGREE_TITLE}}":
+        additionalData?.degreeTitle ||
+        "Bachelor of Technology in Computer Science",
+      "{{STUDY_PERIOD}}":
+        additionalData?.studyPeriod || "September 2020 - June 2024",
+      "{{ACADEMIC_STATUS}}":
+        additionalData?.academicStatus || "Graduate in Good Standing",
+      "{{ATTESTATION_PURPOSE}}":
+        additionalData?.purpose || "employment verification",
       "{{REGISTRAR_NAME}}": "Dr. Kwame Asante",
       "{{DIGITAL_SIGNATURE}}": this.generateDigitalSignature(request.id),
     };
@@ -372,15 +336,53 @@ class DocumentGenerator {
 
   private generateSampleCourseRecords(): string {
     const courses = [
-      { code: "CS101", title: "Introduction to Computer Science", credits: 3, grade: "A", points: 12.0 },
-      { code: "MATH101", title: "Calculus I", credits: 3, grade: "B+", points: 9.9 },
-      { code: "ENG101", title: "Technical Writing", credits: 2, grade: "A-", points: 7.4 },
-      { code: "CS201", title: "Data Structures and Algorithms", credits: 4, grade: "A", points: 16.0 },
-      { code: "CS301", title: "Database Systems", credits: 3, grade: "B+", points: 9.9 },
-      { code: "CS401", title: "Software Engineering", credits: 4, grade: "A-", points: 14.8 },
+      {
+        code: "CS101",
+        title: "Introduction to Computer Science",
+        credits: 3,
+        grade: "A",
+        points: 12.0,
+      },
+      {
+        code: "MATH101",
+        title: "Calculus I",
+        credits: 3,
+        grade: "B+",
+        points: 9.9,
+      },
+      {
+        code: "ENG101",
+        title: "Technical Writing",
+        credits: 2,
+        grade: "A-",
+        points: 7.4,
+      },
+      {
+        code: "CS201",
+        title: "Data Structures and Algorithms",
+        credits: 4,
+        grade: "A",
+        points: 16.0,
+      },
+      {
+        code: "CS301",
+        title: "Database Systems",
+        credits: 3,
+        grade: "B+",
+        points: 9.9,
+      },
+      {
+        code: "CS401",
+        title: "Software Engineering",
+        credits: 4,
+        grade: "A-",
+        points: 14.8,
+      },
     ];
 
-    return courses.map(course => `
+    return courses
+      .map(
+        (course) => `
       <tr>
         <td>${course.code}</td>
         <td>${course.title}</td>
@@ -388,28 +390,30 @@ class DocumentGenerator {
         <td>${course.grade}</td>
         <td>${course.points}</td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
   }
 
   private generateDigitalSignature(requestId: string): string {
     // Simple hash-like signature for demo purposes
     const timestamp = Date.now().toString();
     const combined = requestId + timestamp + "TTU_SECRET_KEY";
-    
+
     let hash = 0;
     for (let i = 0; i < combined.length; i++) {
       const char = combined.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     return Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
   }
 
   convertToPDF(html: string): Buffer {
     // In a real implementation, you would use a library like puppeteer or wkhtmltopdf
     // For this demo, we'll return the HTML as a buffer
-    return Buffer.from(html, 'utf-8');
+    return Buffer.from(html, "utf-8");
   }
 }
 
