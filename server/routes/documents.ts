@@ -410,3 +410,159 @@ export const getAllRequests: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Confirm request (HOD only)
+export const confirmRequest: RequestHandler = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { signature, hodId } = req.body;
+    const userId = req.headers["x-user-id"] as string;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
+    const user = await db.getUserById(userId);
+    if (!user || user.role !== "hod") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. HOD role required.",
+      });
+    }
+
+    const request = await db.getRequestById(requestId);
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    // Verify request belongs to HOD's department
+    if (request.userDepartment !== user.department) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Request not from your department.",
+      });
+    }
+
+    // Update request with HOD confirmation
+    const updatedRequest = await db.updateRequest(requestId, {
+      status: "confirmed",
+      hodSignature: signature,
+      hodId: hodId,
+      reviewedAt: new Date(),
+    });
+
+    if (!updatedRequest) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update request",
+      });
+    }
+
+    // Get student info for notification
+    const student = await db.getUserById(request.userId);
+
+    // Send email notification to student
+    if (student) {
+      // TODO: Implement email service for confirmed requests
+      console.log(
+        `✉️ Confirmed request ${requestId} for student ${student.email}`,
+      );
+    }
+
+    res.json({
+      success: true,
+      message: "Request confirmed successfully",
+      request: updatedRequest,
+    });
+  } catch (error) {
+    console.error("❌ CONFIRM REQUEST ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Reject request (HOD only)
+export const rejectRequest: RequestHandler = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { rejectionReason, hodId } = req.body;
+    const userId = req.headers["x-user-id"] as string;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
+    const user = await db.getUserById(userId);
+    if (!user || user.role !== "hod") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. HOD role required.",
+      });
+    }
+
+    const request = await db.getRequestById(requestId);
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    // Verify request belongs to HOD's department
+    if (request.userDepartment !== user.department) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Request not from your department.",
+      });
+    }
+
+    // Update request with rejection
+    const updatedRequest = await db.updateRequest(requestId, {
+      status: "rejected",
+      rejectionReason: rejectionReason,
+      hodId: hodId,
+      reviewedAt: new Date(),
+    });
+
+    if (!updatedRequest) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update request",
+      });
+    }
+
+    // Get student info for notification
+    const student = await db.getUserById(request.userId);
+
+    // Send email notification to student about rejection
+    if (student) {
+      // TODO: Implement email service for rejected requests
+      console.log(
+        `✉️ Rejected request ${requestId} for student ${student.email} with reason: ${rejectionReason}`,
+      );
+    }
+
+    res.json({
+      success: true,
+      message: "Request rejected successfully",
+      request: updatedRequest,
+    });
+  } catch (error) {
+    console.error("❌ REJECT REQUEST ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
