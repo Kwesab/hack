@@ -174,8 +174,12 @@ export default function RobustDashboard() {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-ttu-navy to-primary rounded-lg flex items-center justify-center">
-              <GraduationCap className="h-6 w-6 text-white" />
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
+                alt="TTU Logo"
+                className="h-8 w-8 object-contain"
+              />
             </div>
             <div>
               <h1 className="text-xl font-bold text-ttu-navy">TTU DocPortal</h1>
