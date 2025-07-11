@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,9 +22,58 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
+  const [userName, setUserName] = useState("User");
+  const [recentRequests, setRecentRequests] = useState([]);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      navigate("/login");
+      return;
+    }
+
+    // Get user name
+    const storedName = localStorage.getItem("userName");
+    if (storedName && storedName !== "New User") {
+      setUserName(storedName);
+    }
+
+    // Fetch recent requests
+    fetchRecentRequests();
+  }, [navigate]);
+
+  const fetchRecentRequests = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const response = await fetch("/api/requests", {
+        headers: {
+          "X-User-Id": userId!,
+        },
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setRecentRequests(result.requests.slice(0, 2)); // Show only 2 recent
+      }
+    } catch (error) {
+      console.error("Failed to fetch requests:", error);
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userPhone");
+    localStorage.removeItem("userName");
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-ttu-gray/30">
       {/* Header */}
@@ -46,12 +96,10 @@ export default function Dashboard() {
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />
             </Button>
-            <Link to="/login">
-              <Button variant="outline" size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </Link>
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </header>
@@ -60,7 +108,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-ttu-navy">
-            Welcome back, John!
+            Welcome back, {userName}!
           </h1>
           <p className="text-muted-foreground">
             Manage your academic document requests from your dashboard
@@ -69,56 +117,62 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors cursor-pointer">
-            <CardHeader className="text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto">
-                <Plus className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">New Request</CardTitle>
-              <CardDescription>
-                Request transcripts, certificates, or attestations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full bg-ttu-navy hover:bg-ttu-navy/90">
-                Start New Request
-              </Button>
-            </CardContent>
-          </Card>
+          <Link to="/new-request">
+            <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors cursor-pointer">
+              <CardHeader className="text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto">
+                  <Plus className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">New Request</CardTitle>
+                <CardDescription>
+                  Request transcripts, certificates, or attestations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full bg-ttu-navy hover:bg-ttu-navy/90">
+                  Start New Request
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-elevation-2 transition-shadow cursor-pointer">
-            <CardHeader className="text-center">
-              <div className="w-12 h-12 bg-info/10 rounded-xl flex items-center justify-center mx-auto">
-                <Upload className="h-6 w-6 text-info" />
-              </div>
-              <CardTitle className="text-lg">Upload Documents</CardTitle>
-              <CardDescription>
-                Upload Ghana Card and supporting documents
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                Upload Ghana Card
-              </Button>
-            </CardContent>
-          </Card>
+          <Link to="/upload-documents">
+            <Card className="hover:shadow-elevation-2 transition-shadow cursor-pointer">
+              <CardHeader className="text-center">
+                <div className="w-12 h-12 bg-info/10 rounded-xl flex items-center justify-center mx-auto">
+                  <Upload className="h-6 w-6 text-info" />
+                </div>
+                <CardTitle className="text-lg">Upload Documents</CardTitle>
+                <CardDescription>
+                  Upload Ghana Card and supporting documents
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  Upload Ghana Card
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-elevation-2 transition-shadow cursor-pointer">
-            <CardHeader className="text-center">
-              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mx-auto">
-                <Eye className="h-6 w-6 text-warning" />
-              </div>
-              <CardTitle className="text-lg">Track Requests</CardTitle>
-              <CardDescription>
-                View status of your document requests
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View All Requests
-              </Button>
-            </CardContent>
-          </Card>
+          <Link to="/track-requests">
+            <Card className="hover:shadow-elevation-2 transition-shadow cursor-pointer">
+              <CardHeader className="text-center">
+                <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mx-auto">
+                  <Eye className="h-6 w-6 text-warning" />
+                </div>
+                <CardTitle className="text-lg">Track Requests</CardTitle>
+                <CardDescription>
+                  View status of your document requests
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  View All Requests
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Recent Requests */}
@@ -127,7 +181,9 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold text-ttu-navy">
               Recent Requests
             </h2>
-            <Button variant="outline">View All</Button>
+            <Link to="/track-requests">
+              <Button variant="outline">View All</Button>
+            </Link>
           </div>
 
           <div className="grid gap-4">
