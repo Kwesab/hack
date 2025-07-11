@@ -43,7 +43,7 @@ const App = () => (
           <Route path="/api-test" element={<ApiTest />} />
           <Route path="/new-login" element={<NewLogin />} />
           <Route path="/upload-ghana-card" element={<UploadGhanaCard />} />
-          <Route path="/payment/callback" element={<PaymentCallback />} />
+          <Route path="/payment/callback" element={<PaystackCallback />} />
           <Route path="/enhanced-request" element={<EnhancedNewRequest />} />
           <Route path="/updated-login" element={<UpdatedLogin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
