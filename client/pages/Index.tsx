@@ -490,13 +490,15 @@ export default function Index() {
               delivery system
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-white text-ttu-navy hover:bg-ttu-gray"
-              >
-                Start Your Request
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link to="/login">
+                <Button
+                  size="lg"
+                  className="bg-white text-ttu-navy hover:bg-ttu-gray w-full sm:w-auto"
+                >
+                  Start Your Request
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
               <Button
                 size="lg"
                 variant="outline"
