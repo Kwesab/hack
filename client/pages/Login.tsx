@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,63 +38,153 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const navigate = useNavigate();
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep("otp");
-      setCountdown(60);
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: phoneNumber }),
+      });
 
-      // Start countdown
-      const interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }, 1500);
+      const result = await response.json();
+
+      if (result.success) {
+        setStep("otp");
+        setCountdown(60);
+
+        // Start countdown
+        const interval = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        alert(result.message || "Failed to send OTP");
+      }
+    } catch (error) {
+      console.error("Send OTP error:", error);
+      alert("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: phoneNumber, otp }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Store user info
+        localStorage.setItem("userId", result.user.id);
+        localStorage.setItem("userPhone", result.user.phone);
+
+        if (result.requiresPassword) {
+          setStep("password");
+        } else {
+          setStep("success");
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 2000);
+        }
+      } else {
+        alert(result.message || "Invalid OTP");
+      }
+    } catch (error) {
+      console.error("Verify OTP error:", error);
+      alert("Network error. Please try again.");
+    } finally {
       setIsLoading(false);
-      setStep("password");
-    }, 1500);
+    }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: phoneNumber, password }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Store user info
+        localStorage.setItem("userId", result.user.id);
+        localStorage.setItem("userPhone", result.user.phone);
+        localStorage.setItem("userName", result.user.name);
+
+        setStep("success");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
+      } else {
+        alert(result.message || "Invalid credentials");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Network error. Please try again.");
+    } finally {
       setIsLoading(false);
-      setStep("success");
-    }, 1500);
+    }
   };
 
-  const resendOtp = () => {
-    setCountdown(60);
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
+  const resendOtp = async () => {
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: phoneNumber }),
       });
-    }, 1000);
+
+      const result = await response.json();
+
+      if (result.success) {
+        setCountdown(60);
+        const interval = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        alert(result.message || "Failed to resend OTP");
+      }
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      alert("Network error. Please try again.");
+    }
   };
 
   return (
@@ -436,8 +527,7 @@ export default function Login() {
                 <Button
                   className="w-full bg-success hover:bg-success/90"
                   onClick={() => {
-                    // Redirect to dashboard
-                    window.location.href = "/dashboard";
+                    navigate("/dashboard");
                   }}
                 >
                   Continue to Dashboard
