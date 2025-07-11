@@ -220,7 +220,7 @@ export default function NotificationCenter() {
                   onClick={markAllAsRead}
                   className="text-xs"
                 >
-                  <MarkAsRead className="h-3 w-3 mr-1" />
+                  <Check className="h-3 w-3 mr-1" />
                   Mark all read
                 </Button>
               )}
