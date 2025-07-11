@@ -20,7 +20,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  GraduationCap,
   FileText,
   Award,
   Shield,
@@ -31,11 +30,15 @@ import {
   CreditCard,
   Download,
   Smartphone,
+  Package,
+  Truck,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-type RequestStep = "details" | "delivery" | "payment" | "confirmation";
+type RequestStep = "details" | "delivery" | "review" | "confirmation";
 
 interface RequestData {
   type: "transcript" | "certificate" | "attestation";
@@ -63,8 +66,10 @@ export default function NewRequest() {
   const documentTypes = {
     transcript: {
       name: "Official Transcript",
-      description: "Complete academic record with grades",
+      description: "Complete academic record with grades and course details",
       price: 50,
+      icon: FileText,
+      color: "from-blue-500 to-indigo-600",
       subTypes: [
         "Undergraduate Transcript",
         "Postgraduate Transcript",
@@ -75,6 +80,8 @@ export default function NewRequest() {
       name: "Certificate",
       description: "Degree or diploma certificate",
       price: 30,
+      icon: Award,
+      color: "from-yellow-500 to-orange-600",
       subTypes: [
         "Bachelor's Degree Certificate",
         "Master's Degree Certificate",
@@ -86,6 +93,8 @@ export default function NewRequest() {
       name: "Attestation",
       description: "Document verification and authentication",
       price: 20,
+      icon: Shield,
+      color: "from-green-500 to-emerald-600",
       subTypes: [
         "Letter of Good Standing",
         "Academic Verification",
@@ -95,11 +104,38 @@ export default function NewRequest() {
     },
   };
 
+  const deliveryOptions = [
+    {
+      id: "digital",
+      name: "Digital Delivery",
+      description: "Instant download after processing",
+      icon: Download,
+      price: 0,
+      time: "Instant",
+    },
+    {
+      id: "courier",
+      name: "Courier Delivery",
+      description: "Physical delivery to your address",
+      icon: Truck,
+      price: 15,
+      time: "3-5 days",
+    },
+    {
+      id: "cash_on_delivery",
+      name: "Cash on Delivery",
+      description: "Pay when you receive the document",
+      icon: Package,
+      price: 10,
+      time: "5-7 days",
+    },
+  ];
+
   const handleNext = () => {
     if (step === "details" && (!requestData.type || !requestData.subType)) {
       toast({
         title: "Missing Information",
-        description: "Please select document type and specify details",
+        description: "Please select a document type and subtype",
         variant: "destructive",
       });
       return;
@@ -112,8 +148,7 @@ export default function NewRequest() {
     ) {
       toast({
         title: "Missing Information",
-        description:
-          "Please provide delivery address for courier/cash delivery",
+        description: "Please provide a delivery address",
         variant: "destructive",
       });
       return;
@@ -122,7 +157,7 @@ export default function NewRequest() {
     const steps: RequestStep[] = [
       "details",
       "delivery",
-      "payment",
+      "review",
       "confirmation",
     ];
     const currentIndex = steps.indexOf(step);
@@ -131,11 +166,11 @@ export default function NewRequest() {
     }
   };
 
-  const handleBack = () => {
+  const handlePrevious = () => {
     const steps: RequestStep[] = [
       "details",
       "delivery",
-      "payment",
+      "review",
       "confirmation",
     ];
     const currentIndex = steps.indexOf(step);
@@ -248,241 +283,181 @@ export default function NewRequest() {
           window.location.href = result.authorization_url;
         }, 1500);
       } else {
-        // If automatic payment fails, show payment step
-        console.error("Paystack initialization failed:", result);
-        setStep("payment");
         toast({
-          title: "Payment Initialization Failed",
-          description:
-            result.message ||
-            "Please try again or choose another payment method",
+          title: "Payment Error",
+          description: result.message || "Failed to initialize payment",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("Automatic payment error:", error);
-      // If automatic payment fails, show payment step
-      setStep("payment");
+      console.error("Payment initialization error:", error);
       toast({
-        title: "Payment Required",
-        description: "Please choose a payment method to complete your request",
+        title: "Payment Error",
+        description: "Failed to initialize payment. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const handlePayment = async (paymentMethod: string) => {
-    if (!createdRequest) return;
+  const getTotalAmount = () => {
+    const basePrice = documentTypes[requestData.type].price;
+    const deliveryPrice =
+      deliveryOptions.find((option) => option.id === requestData.deliveryMethod)
+        ?.price || 0;
+    return basePrice + deliveryPrice;
+  };
 
-    setIsSubmitting(true);
-
-    try {
-      const userId = localStorage.getItem("userId");
-
-      // Initialize payment with Paystack
-      const response = await fetch("/api/payments/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Id": userId!,
-        },
-        body: JSON.stringify({
-          requestId: createdRequest.id,
-          amount: createdRequest.amount,
-          paymentMethod,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.authorization_url) {
-        // Redirect to Paystack payment page
-        window.location.href = result.authorization_url;
-      } else if (result.success) {
-        // For cash on delivery or other non-Paystack methods
-        setCreatedRequest(result.request);
-        setStep("confirmation");
-        toast({
-          title: "Request Processed",
-          description: "Your request has been processed successfully",
-        });
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast({
-        title: "Payment Error",
-        description: "Failed to process payment. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const stepInfo = {
+    details: {
+      title: "Document Details",
+      subtitle: "Choose your document type",
+      step: 1,
+    },
+    delivery: {
+      title: "Delivery Method",
+      subtitle: "How would you like to receive it",
+      step: 2,
+    },
+    review: {
+      title: "Review & Confirm",
+      subtitle: "Check your request details",
+      step: 3,
+    },
+    confirmation: {
+      title: "Request Submitted",
+      subtitle: "Your request has been created",
+      step: 4,
+    },
   };
 
   return (
-    <div className="min-h-screen bg-ttu-gray/30">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
+                  alt="TTU Logo"
+                  className="h-8 w-8 object-contain"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  TTU DocPortal
+                </h1>
+                <p className="text-sm text-gray-500">New Request</p>
+              </div>
+            </div>
             <Link to="/dashboard">
-              <Button variant="ghost" size="sm">
+              <Button variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>
             </Link>
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Fbc269ba1ae514c8cb5655e2af9bc5e6a%2Fe27d3c87d0ea48608a4f4fd72e539d38?format=webp&width=800"
-                alt="TTU Logo"
-                className="h-8 w-8 object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-ttu-navy">New Request</h1>
-              <p className="text-xs text-muted-foreground">TTU DocPortal</p>
-            </div>
-          </div>
         </div>
       </header>
 
-      <div className="container max-w-4xl py-8">
-        {/* Progress Steps */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Progress Indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-center gap-4">
-            {["details", "delivery", "payment", "confirmation"].map(
-              (s, index) => (
-                <div key={s} className="flex items-center gap-2">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                      step === s
-                        ? "bg-primary text-white"
-                        : index <
-                            [
-                              "details",
-                              "delivery",
-                              "payment",
-                              "confirmation",
-                            ].indexOf(step)
-                          ? "bg-success text-white"
-                          : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {index <
-                    ["details", "delivery", "payment", "confirmation"].indexOf(
-                      step,
-                    ) ? (
-                      <CheckCircle className="h-5 w-5" />
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-                  {index < 3 && (
-                    <div
-                      className={`w-12 h-1 transition-colors ${
-                        index <
-                        [
-                          "details",
-                          "delivery",
-                          "payment",
-                          "confirmation",
-                        ].indexOf(step)
-                          ? "bg-success"
-                          : "bg-muted"
-                      }`}
-                    />
-                  )}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            {[1, 2, 3, 4].map((num) => (
+              <div key={num} className="flex items-center">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                    stepInfo[step].step >= num
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
+                      : "bg-gray-200 text-gray-500"
+                  }`}
+                >
+                  {num}
                 </div>
-              ),
-            )}
+                {num < 4 && (
+                  <div
+                    className={`w-12 h-1 mx-2 rounded-full transition-all duration-300 ${
+                      stepInfo[step].step > num ? "bg-blue-600" : "bg-gray-200"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
           </div>
-
-          <div className="text-center mt-4">
-            <h2 className="text-2xl font-bold text-ttu-navy capitalize">
-              {step === "details" && "Document Details"}
-              {step === "delivery" && "Delivery Options"}
-              {step === "payment" && "Payment"}
-              {step === "confirmation" && "Confirmation"}
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+              {stepInfo[step].title}
             </h2>
+            <p className="text-gray-600">{stepInfo[step].subtitle}</p>
           </div>
         </div>
 
-        {/* Step Content */}
-        <Card className="shadow-elevation-2">
+        {/* Main Content */}
+        <Card className="border-0 shadow-2xl shadow-blue-500/10">
           <CardContent className="p-8">
+            {/* Document Details Step */}
             {step === "details" && (
               <div className="space-y-8">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-ttu-navy">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     Select Document Type
                   </h3>
-
                   <div className="grid md:grid-cols-3 gap-4">
-                    {Object.entries(documentTypes).map(([key, doc]) => (
-                      <Card
-                        key={key}
-                        className={`cursor-pointer border-2 transition-colors ${
-                          requestData.type === key
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                        onClick={() =>
-                          setRequestData({
-                            ...requestData,
-                            type: key as any,
-                            subType: "",
-                          })
-                        }
-                      >
-                        <CardHeader className="text-center pb-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto">
-                            {key === "transcript" && (
-                              <FileText className="h-6 w-6 text-primary" />
-                            )}
-                            {key === "certificate" && (
-                              <Award className="h-6 w-6 text-primary" />
-                            )}
-                            {key === "attestation" && (
-                              <Shield className="h-6 w-6 text-primary" />
-                            )}
-                          </div>
-                          <CardTitle className="text-base">
-                            {doc.name}
-                          </CardTitle>
-                          <CardDescription className="text-sm">
-                            {doc.description}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-0 text-center">
-                          <Badge className="bg-ttu-gold/10 text-ttu-gold">
-                            GHS {doc.price}
-                          </Badge>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {Object.entries(documentTypes).map(([key, type]) => {
+                      const IconComponent = type.icon;
+                      return (
+                        <Card
+                          key={key}
+                          className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                            requestData.type === key
+                              ? "ring-2 ring-blue-500 shadow-lg"
+                              : "hover:shadow-md"
+                          }`}
+                          onClick={() =>
+                            setRequestData({
+                              ...requestData,
+                              type: key as any,
+                              subType: "",
+                            })
+                          }
+                        >
+                          <CardContent className="p-6 text-center">
+                            <div
+                              className={`w-16 h-16 bg-gradient-to-br ${type.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}
+                            >
+                              <IconComponent className="h-8 w-8 text-white" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900 mb-2">
+                              {type.name}
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-3">
+                              {type.description}
+                            </p>
+                            <Badge className="bg-green-50 text-green-700 border-green-200">
+                              GH₵{type.price}
+                            </Badge>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {requestData.type && (
-                  <div className="space-y-4">
-                    <Label htmlFor="subType">Specific Document</Label>
+                  <div>
+                    <Label className="text-base font-medium text-gray-900">
+                      Select Specific Type
+                    </Label>
                     <Select
                       value={requestData.subType}
                       onValueChange={(value) =>
                         setRequestData({ ...requestData, subType: value })
                       }
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select specific document type" />
+                      <SelectTrigger className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg mt-2">
+                        <SelectValue placeholder="Choose a specific type..." />
                       </SelectTrigger>
                       <SelectContent>
                         {documentTypes[requestData.type].subTypes.map(
@@ -497,93 +472,104 @@ export default function NewRequest() {
                   </div>
                 )}
 
-                <div className="space-y-4">
-                  <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                <div>
+                  <Label
+                    htmlFor="notes"
+                    className="text-base font-medium text-gray-900"
+                  >
+                    Additional Notes (Optional)
+                  </Label>
                   <Textarea
                     id="notes"
-                    placeholder="Any special instructions or additional information..."
+                    placeholder="Any specific requirements or additional information..."
                     value={requestData.notes}
                     onChange={(e) =>
                       setRequestData({ ...requestData, notes: e.target.value })
                     }
-                    rows={3}
+                    className="mt-2 min-h-[100px] border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
                   />
                 </div>
               </div>
             )}
 
+            {/* Delivery Method Step */}
             {step === "delivery" && (
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-ttu-navy">
-                    Choose Delivery Method
-                  </h3>
-
-                  <RadioGroup
-                    value={requestData.deliveryMethod}
-                    onValueChange={(value: any) =>
-                      setRequestData({ ...requestData, deliveryMethod: value })
-                    }
-                    className="space-y-4"
-                  >
-                    <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                      <RadioGroupItem value="digital" id="digital" />
-                      <div className="flex-1">
-                        <Label htmlFor="digital" className="font-medium">
-                          Digital Only
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive digital copy via email immediately after
-                          processing
-                        </p>
-                        <Badge className="mt-1 bg-success/10 text-success">
-                          Fast & Eco-friendly
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                      <RadioGroupItem value="courier" id="courier" />
-                      <div className="flex-1">
-                        <Label htmlFor="courier" className="font-medium">
-                          Courier Delivery
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive official hard copy via courier service
-                        </p>
-                        <Badge className="mt-1 bg-info/10 text-info">
-                          3-5 Business Days
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                      <RadioGroupItem
-                        value="cash_on_delivery"
-                        id="cash_on_delivery"
-                      />
-                      <div className="flex-1">
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Choose Delivery Method
+                </h3>
+                <RadioGroup
+                  value={requestData.deliveryMethod}
+                  onValueChange={(value) =>
+                    setRequestData({
+                      ...requestData,
+                      deliveryMethod: value as any,
+                    })
+                  }
+                  className="space-y-4"
+                >
+                  {deliveryOptions.map((option) => {
+                    const IconComponent = option.icon;
+                    return (
+                      <div key={option.id} className="relative">
+                        <RadioGroupItem
+                          value={option.id}
+                          id={option.id}
+                          className="sr-only"
+                        />
                         <Label
-                          htmlFor="cash_on_delivery"
-                          className="font-medium"
+                          htmlFor={option.id}
+                          className={`block p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                            requestData.deliveryMethod === option.id
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          }`}
                         >
-                          Cash on Delivery
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                  requestData.deliveryMethod === option.id
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-100 text-gray-600"
+                                }`}
+                              >
+                                <IconComponent className="h-6 w-6" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-900">
+                                  {option.name}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  {option.description}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Delivery time: {option.time}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-gray-900">
+                                {option.price === 0
+                                  ? "Free"
+                                  : `+GH₵${option.price}`}
+                              </p>
+                            </div>
+                          </div>
                         </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Pay when you receive your documents at your doorstep
-                        </p>
-                        <Badge className="mt-1 bg-ttu-gold/10 text-ttu-gold">
-                          Pay on Receipt
-                        </Badge>
                       </div>
-                    </div>
-                  </RadioGroup>
-                </div>
+                    );
+                  })}
+                </RadioGroup>
 
-                {(requestData.deliveryMethod === "courier" ||
-                  requestData.deliveryMethod === "cash_on_delivery") && (
-                  <div className="space-y-4">
-                    <Label htmlFor="address">Delivery Address</Label>
+                {requestData.deliveryMethod !== "digital" && (
+                  <div>
+                    <Label
+                      htmlFor="address"
+                      className="text-base font-medium text-gray-900"
+                    >
+                      Delivery Address
+                    </Label>
                     <Textarea
                       id="address"
                       placeholder="Enter your complete delivery address..."
@@ -594,213 +580,148 @@ export default function NewRequest() {
                           deliveryAddress: e.target.value,
                         })
                       }
-                      rows={3}
+                      className="mt-2 min-h-[100px] border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
                       required
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Please provide a complete address including postal code
-                      for accurate delivery
-                    </p>
                   </div>
                 )}
               </div>
             )}
 
-            {step === "payment" && !createdRequest && (
-              <div className="space-y-8">
-                <div className="bg-ttu-light-blue/20 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-ttu-navy mb-4">
-                    Order Summary
-                  </h3>
+            {/* Review Step */}
+            {step === "review" && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Review Your Request
+                </h3>
 
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Document Type:</span>
-                      <span className="font-medium">
-                        {documentTypes[requestData.type].name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Specific Document:</span>
-                      <span className="font-medium">{requestData.subType}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Delivery Method:</span>
-                      <span className="font-medium capitalize">
-                        {requestData.deliveryMethod}
-                      </span>
-                    </div>
-                    <div className="border-t pt-3 flex justify-between text-lg font-semibold">
-                      <span>Total Amount:</span>
-                      <span className="text-ttu-navy">
-                        GHS {documentTypes[requestData.type].price}
-                      </span>
-                    </div>
+                <div className="bg-gray-50 rounded-xl p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-700">
+                      Document Type:
+                    </span>
+                    <span className="text-gray-900">
+                      {documentTypes[requestData.type].name}
+                    </span>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-700">
+                      Specific Type:
+                    </span>
+                    <span className="text-gray-900">{requestData.subType}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-700">
+                      Delivery Method:
+                    </span>
+                    <span className="text-gray-900 capitalize">
+                      {requestData.deliveryMethod.replace("_", " ")}
+                    </span>
+                  </div>
+                  {requestData.deliveryAddress && (
+                    <div className="flex items-start justify-between">
+                      <span className="font-medium text-gray-700">
+                        Delivery Address:
+                      </span>
+                      <span className="text-gray-900 text-right max-w-xs">
+                        {requestData.deliveryAddress}
+                      </span>
+                    </div>
+                  )}
+                  {requestData.notes && (
+                    <div className="flex items-start justify-between">
+                      <span className="font-medium text-gray-700">Notes:</span>
+                      <span className="text-gray-900 text-right max-w-xs">
+                        {requestData.notes}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="text-center">
-                  <p className="text-muted-foreground mb-4">
-                    Click continue to submit your request and proceed to
+                <div className="bg-blue-50 rounded-xl p-6">
+                  <div className="flex items-center justify-between text-lg font-semibold">
+                    <span className="text-gray-900">Total Amount:</span>
+                    <span className="text-blue-600">GH₵{getTotalAmount()}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Payment will be processed after submitting your request
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Confirmation Step */}
+            {step === "confirmation" && (
+              <div className="text-center space-y-6 py-8">
+                <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle className="h-10 w-10 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Request Submitted Successfully!
+                  </h3>
+                  <p className="text-gray-600">
+                    Your request has been created and you will be redirected to
                     payment.
                   </p>
+                  {createdRequest && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Request ID: {createdRequest.id}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
+            {/* Navigation */}
+            {step !== "confirmation" && (
+              <div className="flex items-center justify-between pt-8 border-t border-gray-100">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={step === "details"}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                {step === "review" ? (
                   <Button
                     onClick={handleSubmitRequest}
                     disabled={isSubmitting}
-                    className="bg-ttu-navy hover:bg-ttu-navy/90"
-                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8"
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Processing & Redirecting to Payment...
                       </>
                     ) : (
                       <>
                         Submit Request & Pay
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <CreditCard className="ml-2 h-4 w-4" />
                       </>
                     )}
                   </Button>
-                </div>
-              </div>
-            )}
-
-            {step === "payment" && createdRequest && !createdRequest.isPaid && (
-              <div className="space-y-8">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle className="h-8 w-8 text-success" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-ttu-navy">
-                    Request Submitted Successfully!
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Request ID:{" "}
-                    <span className="font-mono font-medium">
-                      {createdRequest.id}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-ttu-navy">
-                    Choose Payment Method
-                  </h4>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Button
-                      onClick={() => handlePayment("mobile_money")}
-                      disabled={isSubmitting}
-                      className="h-auto p-6 bg-ttu-gold hover:bg-ttu-gold/90"
-                    >
-                      <div className="text-center">
-                        <Smartphone className="h-8 w-8 mx-auto mb-2" />
-                        <div className="font-medium">Mobile Money</div>
-                        <div className="text-sm opacity-90">
-                          MTN, Vodafone, AirtelTigo
-                        </div>
-                      </div>
-                    </Button>
-
-                    <Button
-                      onClick={() => handlePayment("card")}
-                      disabled={isSubmitting}
-                      variant="outline"
-                      className="h-auto p-6 border-ttu-navy"
-                    >
-                      <div className="text-center">
-                        <CreditCard className="h-8 w-8 mx-auto mb-2" />
-                        <div className="font-medium">Card Payment</div>
-                        <div className="text-sm text-muted-foreground">
-                          Visa, Mastercard
-                        </div>
-                      </div>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {step === "confirmation" &&
-              createdRequest &&
-              createdRequest.isPaid && (
-                <div className="text-center space-y-8">
-                  <div className="space-y-4">
-                    <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto">
-                      <CheckCircle className="h-10 w-10 text-success" />
-                    </div>
-                    <h3 className="text-2xl font-semibold text-success">
-                      Payment Successful!
-                    </h3>
-                    <p className="text-muted-foreground max-w-md mx-auto">
-                      Your document request has been submitted and payment
-                      confirmed. You'll receive SMS updates on your request
-                      status.
-                    </p>
-                  </div>
-
-                  <div className="bg-ttu-light-blue/20 rounded-lg p-6 max-w-md mx-auto">
-                    <h4 className="font-semibold text-ttu-navy mb-3">
-                      Request Details
-                    </h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Request ID:</span>
-                        <span className="font-mono">{createdRequest.id}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Status:</span>
-                        <Badge className="bg-success/10 text-success">
-                          Processing
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Expected Completion:</span>
-                        <span>24-48 hours</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link to="/dashboard">
-                      <Button className="bg-ttu-navy hover:bg-ttu-navy/90">
-                        <Download className="mr-2 h-4 w-4" />
-                        Go to Dashboard
-                      </Button>
-                    </Link>
-                    <Link to="/new-request">
-                      <Button variant="outline">Make Another Request</Button>
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-            {/* Navigation Buttons */}
-            {step !== "confirmation" &&
-              (!createdRequest || !createdRequest.isPaid) && (
-                <div className="flex justify-between pt-8 border-t">
+                ) : (
                   <Button
-                    onClick={handleBack}
-                    variant="outline"
-                    disabled={step === "details"}
+                    onClick={handleNext}
+                    disabled={
+                      (step === "details" &&
+                        (!requestData.type || !requestData.subType)) ||
+                      (step === "delivery" &&
+                        requestData.deliveryMethod !== "digital" &&
+                        !requestData.deliveryAddress)
+                    }
+                    className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white flex items-center gap-2"
                   >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    Next
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
-
-                  {step !== "payment" && (
-                    <Button
-                      onClick={handleNext}
-                      className="bg-ttu-navy hover:bg-ttu-navy/90"
-                    >
-                      Next
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
