@@ -84,7 +84,9 @@ class DatabaseService {
         throw new Error("No database URL provided");
       }
     } catch (error) {
-      console.log("⚠️ PostgreSQL connection failed, using in-memory database");
+      console.log(
+        "⚠�� PostgreSQL connection failed, using in-memory database",
+      );
       console.log("Error:", error.message);
       this.usePostgres = false;
       this.initializeInMemoryData();
@@ -788,6 +790,25 @@ class DatabaseService {
 
   async getAllRequests(): Promise<DocumentRequest[]> {
     return Array.from(this.requests.values());
+  }
+
+  async updateRequest(
+    requestId: string,
+    updates: Partial<DocumentRequest>,
+  ): Promise<DocumentRequest | undefined> {
+    const request = this.requests.get(requestId);
+    if (request) {
+      const updatedRequest = {
+        ...request,
+        ...updates,
+        updatedAt: new Date(),
+        ...(updates.status === "completed" &&
+          !request.completedAt && { completedAt: new Date() }),
+      };
+      this.requests.set(requestId, updatedRequest);
+      return updatedRequest;
+    }
+    return undefined;
   }
 }
 
