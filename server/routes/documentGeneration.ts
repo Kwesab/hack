@@ -146,18 +146,42 @@ export const previewDocument: RequestHandler = async (req, res) => {
       });
     }
 
-    // Mock request data
+    // Get the actual request from database
+    const requests = await db.getRequestsByUserId(userId);
+    const request = requests.find((req) => req.id === requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Document request not found",
+      });
+    }
+
+    // PAYMENT VERIFICATION: Check if request is paid before allowing preview
+    if (!request.isPaid) {
+      return res.status(402).json({
+        success: false,
+        message:
+          "Payment required. Please complete payment before previewing your document.",
+        status: request.status,
+        isPaid: request.isPaid,
+        amount: request.amount,
+        requestId: request.id,
+      });
+    }
+
+    // Prepare document data with actual request info
     const documentData = {
       studentName: user.name,
-      studentId: user.studentId || "TTU/DEMO/2024",
-      documentType: "transcript",
-      subType: "undergraduate",
+      studentId: user.studentId || "TTU/UNKNOWN/2024",
+      documentType: request.type,
+      subType: request.subType,
       graduationDate: "July 2024",
       degreeProgram: "Bachelor of Science in Computer Science",
       gpa: "3.55",
       classification: "Second Class Upper",
       issueDate: new Date().toLocaleDateString(),
-      requestId: requestId,
+      requestId: request.id,
     };
 
     try {
