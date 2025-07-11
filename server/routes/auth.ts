@@ -171,25 +171,59 @@ export const completeRegistration: RequestHandler = async (req, res) => {
 // Login with password
 export const login: RequestHandler = async (req, res) => {
   try {
-    const { phone, password } = loginSchema.parse(req.body);
+    console.log("Login attempt with:", req.body);
+
+    const validation = loginSchema.safeParse(req.body);
+    if (!validation.success) {
+      console.log("Login validation error:", validation.error);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request format",
+        errors: validation.error.errors,
+      });
+    }
+
+    const { phone, password } = validation.data;
+    console.log(`Login attempt for phone: ${phone}`);
 
     const user = db.getUserByPhone(phone);
 
     if (!user) {
+      console.log(`User not found for phone: ${phone}`);
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
+      });
+    }
+
+    console.log(`User found:`, {
+      id: user.id,
+      name: user.name,
+      hasPassword: !!(user as any).password,
+    });
+
+    // Check if user has a password set
+    if (!(user as any).password) {
+      console.log(
+        "User has no password set - they need to complete registration",
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Please complete your registration first",
+        requiresRegistration: true,
       });
     }
 
     // In production, compare with hashed password
     if ((user as any).password !== password) {
+      console.log("Password mismatch");
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
       });
     }
 
+    console.log("Login successful");
     res.json({
       success: true,
       message: "Login successful",
