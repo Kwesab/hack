@@ -35,7 +35,7 @@ class SMSService {
         key: this.apiKey,
         to: formattedPhone,
         msg: message,
-        sender_id: "TTU Portal",
+        sender_id: "TTU",
       });
 
       const url = `${this.baseUrl}/smsapi?${params.toString()}`;
