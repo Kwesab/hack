@@ -96,10 +96,14 @@ export const createRequest: RequestHandler = async (req, res) => {
       request,
     });
   } catch (error) {
-    console.error("Create Request Error:", error);
+    console.error("❌ CREATE REQUEST ERROR:", error);
+    console.error("Error type:", typeof error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: error.message,
     });
   }
 };
