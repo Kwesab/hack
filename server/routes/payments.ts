@@ -7,7 +7,13 @@ import { db } from "../db/database";
 const initializePaymentSchema = z.object({
   requestId: z.string().min(1, "Request ID is required"),
   amount: z.number().positive("Amount must be positive").optional(),
-  paymentMethod: z.enum(["paystack", "cash_on_delivery"]),
+  paymentMethod: z.enum([
+    "paystack",
+    "card",
+    "mobile_money",
+    "bank_transfer",
+    "cash_on_delivery",
+  ]),
 });
 
 const verifyPaymentSchema = z.object({
@@ -70,7 +76,7 @@ export const initializePayment: RequestHandler = async (req, res) => {
       });
     }
 
-    console.log("✅ Request found:", request.id, request.type, request.amount);
+    console.log("�� Request found:", request.id, request.type, request.amount);
 
     if (paymentMethod === "cash_on_delivery") {
       // For cash on delivery, mark as pending payment
