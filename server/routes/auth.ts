@@ -143,26 +143,26 @@ export const verifyOTP: RequestHandler = async (req, res) => {
   try {
     const { phone, otp } = verifyOTPSchema.parse(req.body);
 
-    const isValid = db.verifyOTP(phone, otp);
+    const isValid = await db.verifyOTP(phone, otp);
 
     if (isValid) {
       // Check if user exists
-      let user = db.getUserByPhone(phone);
+      let user = await db.getUserByPhone(phone);
 
       if (!user) {
         // Create new user if doesn't exist
-        user = db.createUser({
+        user = await db.createUser({
           phone,
           name: "New User", // Will be updated later
           isVerified: true,
         });
       } else {
         // Mark existing user as verified
-        db.updateUser(user.id, { isVerified: true });
+        await db.updateUser(user.id, { isVerified: true });
       }
 
       // Clear OTP session
-      db.clearOTPSession(phone);
+      await db.clearOTPSession(phone);
 
       res.json({
         success: true,
