@@ -79,14 +79,14 @@ export const generateAndDownloadDocument: RequestHandler = async (req, res) => {
     const documentData = {
       studentName: user.name,
       studentId: user.studentId || "TTU/UNKNOWN/2024",
-      documentType: mockRequest.type,
-      subType: mockRequest.subType,
+      documentType: request.type,
+      subType: request.subType,
       graduationDate: "July 2024",
       degreeProgram: "Bachelor of Science in Computer Science",
       gpa: "3.55",
       classification: "Second Class Upper",
       issueDate: new Date().toLocaleDateString(),
-      requestId: mockRequest.id,
+      requestId: request.id,
     };
 
     try {
