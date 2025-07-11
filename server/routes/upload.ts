@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { z } from "zod";
-import { db } from "../models";
+import { db } from "../db/database";
 
 // Validation schemas
 const uploadGhanaCardSchema = z.object({
