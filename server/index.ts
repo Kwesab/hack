@@ -123,6 +123,53 @@ export function createServer() {
   app.get("/api/requests/department", getDepartmentRequests);
   app.post("/api/requests/:requestId/confirm", confirmRequest);
   app.post("/api/requests/:requestId/reject", rejectRequest);
+  app.get("/api/users/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const requestUserId = req.headers["x-user-id"] as string;
+
+      // Only allow users to get their own info or admins/HODs to get any user info
+      if (userId !== requestUserId) {
+        const requestingUser = await db.getUserById(requestUserId);
+        if (
+          !requestingUser ||
+          !["admin", "hod"].includes(requestingUser.role)
+        ) {
+          return res.status(403).json({
+            success: false,
+            message: "Access denied",
+          });
+        }
+      }
+
+      const user = await db.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          department: user.department,
+          studentId: user.studentId,
+        },
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  });
 
   // Upload routes
   app.post("/api/upload/ghana-card", uploadGhanaCard);
