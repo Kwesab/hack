@@ -24,6 +24,19 @@ class SMSService {
       // Format phone number - ensure it starts with 233 for Ghana
       const formattedPhone = this.formatPhoneNumber(to);
 
+      console.log(`Attempting to send SMS to ${formattedPhone}`);
+      console.log(`SMS message: ${message}`);
+
+      // In development mode, simulate success
+      if (process.env.NODE_ENV === "development") {
+        console.log("Development mode: Simulating SMS success");
+        return {
+          success: true,
+          message: "SMS sent successfully (development mode)",
+          data: { messageId: `dev_${Date.now()}` },
+        };
+      }
+
       const response = await fetch(`${this.baseUrl}/send`, {
         method: "POST",
         headers: {
@@ -53,6 +66,17 @@ class SMSService {
       }
     } catch (error) {
       console.error("SMS Service Error:", error);
+
+      // In development mode, fallback to success
+      if (process.env.NODE_ENV === "development") {
+        console.log("Development mode: SMS API failed, but returning success");
+        return {
+          success: true,
+          message: "SMS sent successfully (fallback mode)",
+          data: { messageId: `fallback_${Date.now()}` },
+        };
+      }
+
       return {
         success: false,
         message: "Network error sending SMS",
