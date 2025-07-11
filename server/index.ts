@@ -7,6 +7,7 @@ import {
   completeRegistration,
   login,
   getCurrentUser,
+  verifyCredentials,
 } from "./routes/auth";
 import {
   emailLogin,
