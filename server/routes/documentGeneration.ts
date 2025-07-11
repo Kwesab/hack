@@ -274,7 +274,10 @@ export const getDocumentInfo: RequestHandler = async (req, res) => {
   }
 };
 
-// Admin: Generate document for any user
+// Admin: Generate document for any user with REAL USER DATA + MOCK ACADEMIC DATA
+// This function creates official documents showing:
+// - Real user information (name, student ID, department, contact details)
+// - Mock academic data (courses, grades, GPA) for demonstration purposes
 export const adminGenerateDocument: RequestHandler = async (req, res) => {
   try {
     const { requestId } = req.params;
