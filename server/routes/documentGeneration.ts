@@ -92,12 +92,12 @@ export const generateAndDownloadDocument: RequestHandler = async (req, res) => {
     try {
       // Generate PDF
       const pdfBuffer = await pdfGeneratorService.generateDocumentPDF(
-        mockRequest.type,
+        request.type,
         documentData,
       );
 
       // Set response headers for PDF download
-      const filename = `TTU_${mockRequest.type}_${user.studentId}_${Date.now()}.pdf`;
+      const filename = `TTU_${request.type}_${user.studentId}_${Date.now()}.pdf`;
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
