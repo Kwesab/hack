@@ -21,7 +21,7 @@ import {
   Shield,
   CreditCard,
   X,
-  MarkAsRead,
+  Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
