@@ -94,20 +94,24 @@ export default function Index() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  className="bg-ttu-navy hover:bg-ttu-navy/90 text-white"
-                >
-                  Request Documents
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-ttu-navy text-ttu-navy hover:bg-ttu-navy hover:text-white"
-                >
-                  Track Request
-                </Button>
+                <Link to="/login">
+                  <Button
+                    size="lg"
+                    className="bg-ttu-navy hover:bg-ttu-navy/90 text-white w-full sm:w-auto"
+                  >
+                    Request Documents
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-ttu-navy text-ttu-navy hover:bg-ttu-navy hover:text-white w-full sm:w-auto"
+                  >
+                    Track Request
+                  </Button>
+                </Link>
               </div>
 
               <div className="flex items-center gap-8 pt-4">
