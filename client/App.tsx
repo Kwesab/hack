@@ -13,6 +13,7 @@ import NewRequest from "./pages/NewRequest";
 import UploadDocuments from "./pages/UploadDocuments";
 import TrackRequests from "./pages/TrackRequests";
 import AdminDashboard from "./pages/AdminDashboard";
+import TestOTP from "./pages/TestOTP";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
