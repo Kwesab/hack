@@ -88,18 +88,34 @@ export const getUserRequests: RequestHandler = async (req, res) => {
   try {
     const userId = req.headers["x-user-id"] as string;
 
+    console.log("Getting requests for userId:", userId);
+
     if (!userId) {
+      console.log("No userId provided");
       return res.status(401).json({
         success: false,
         message: "Not authenticated",
       });
     }
 
+    // Check if user exists
+    const user = db.getUserById(userId);
+    if (!user) {
+      console.log(`User not found for id: ${userId}`);
+      // Return empty requests array instead of error for missing user
+      return res.json({
+        success: true,
+        requests: [],
+        message: "No requests found for this user",
+      });
+    }
+
     const requests = db.getRequestsByUserId(userId);
+    console.log(`Found ${requests.length} requests for user ${userId}`);
 
     res.json({
       success: true,
-      requests,
+      requests: requests || [],
     });
   } catch (error) {
     console.error("Get User Requests Error:", error);
