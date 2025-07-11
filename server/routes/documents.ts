@@ -99,7 +99,7 @@ export const getUserRequests: RequestHandler = async (req, res) => {
     }
 
     // Check if user exists
-    const user = db.getUserById(userId);
+    const user = await db.getUserById(userId);
     if (!user) {
       console.log(`User not found for id: ${userId}`);
       // Return empty requests array instead of error for missing user
@@ -110,7 +110,7 @@ export const getUserRequests: RequestHandler = async (req, res) => {
       });
     }
 
-    const requests = db.getRequestsByUserId(userId);
+    const requests = await db.getRequestsByUserId(userId);
     console.log(`Found ${requests.length} requests for user ${userId}`);
 
     res.json({
