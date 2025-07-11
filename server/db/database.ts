@@ -98,7 +98,7 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR PRIMARY KEY,
         email VARCHAR UNIQUE NOT NULL,
-        phone VARCHAR UNIQUE NOT NULL,
+                phone VARCHAR,
         name VARCHAR NOT NULL,
         password VARCHAR NOT NULL,
         role VARCHAR DEFAULT 'student',
