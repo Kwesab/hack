@@ -110,6 +110,7 @@ export default function Login() {
         localStorage.setItem("userPhone", result.user.phone);
 
         if (result.requiresPassword) {
+          setIsNewUser(true);
           setStep("password");
         } else {
           setStep("success");
