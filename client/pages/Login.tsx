@@ -27,6 +27,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiCall } from "@/lib/api";
 
 type AuthStep = "phone" | "otp" | "password" | "success";
 
