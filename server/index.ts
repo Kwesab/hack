@@ -74,5 +74,9 @@ export function createServer() {
   app.get("/api/generate/preview/:requestId", previewDocument);
   app.get("/api/generate/info/:requestId", getDocumentInfo);
 
+  // Test routes for debugging
+  app.post("/api/test/phone", testPhoneValidation);
+  app.post("/api/test/otp", testOTPGeneration);
+
   return app;
 }
