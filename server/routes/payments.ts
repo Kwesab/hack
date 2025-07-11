@@ -49,21 +49,28 @@ export const initializePayment: RequestHandler = async (req, res) => {
     // Get user and request details
     const user = await db.getUserById(userId);
     if (!user) {
+      console.log("❌ User not found:", userId);
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    // For now, we'll simulate getting the request from our system
-    // In the real implementation, you'd fetch from your database
-    const mockRequest = {
-      id: requestId,
-      userId,
-      type: "transcript",
-      amount: 50,
-      status: "pending",
-    };
+    console.log("✅ User found:", user.id, user.name);
+
+    // Get the actual request from database
+    const requests = await db.getRequestsByUserId(userId);
+    const request = requests.find((req) => req.id === requestId);
+
+    if (!request) {
+      console.log("❌ Request not found:", requestId);
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    console.log("✅ Request found:", request.id, request.type, request.amount);
 
     if (paymentMethod === "cash_on_delivery") {
       // For cash on delivery, mark as pending payment
