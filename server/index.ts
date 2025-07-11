@@ -99,10 +99,22 @@ export function createServer() {
   app.get("/api/files/:fileName", getFile);
   app.put("/api/admin/verify-ghana-card/:userId", verifyGhanaCard);
 
-  // Document generation routes
+  // Payment routes
+  app.post("/api/payments/initialize", initializePayment);
+  app.post("/api/payments/verify", verifyPayment);
+  app.get("/api/payments/status/:reference", getPaymentStatus);
+  app.post("/api/payments/refund/:reference", refundPayment);
+
+  // Document generation and download routes
+  app.get("/api/documents/download/:requestId", generateAndDownloadDocument);
+  app.get("/api/documents/preview/:requestId", previewDocument);
+  app.get("/api/documents/info/:requestId", getDocumentInfo);
+  app.get("/api/documents/types", getDocumentTypes);
+  app.get("/api/admin/generate/:requestId", adminGenerateDocument);
+
+  // Legacy document generation routes (keeping for compatibility)
   app.get("/api/generate/document/:requestId", generateDocument);
   app.get("/api/generate/pdf/:requestId", generatePDF);
-  app.get("/api/generate/preview/:requestId", previewDocument);
   app.get("/api/generate/info/:requestId", getDocumentInfo);
 
   // Test routes for debugging
