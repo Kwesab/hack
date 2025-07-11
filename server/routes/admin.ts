@@ -9,14 +9,8 @@ export const getPendingGhanaCardVerifications: RequestHandler = async (
   try {
     // In a real implementation, you'd verify admin authentication here
 
-    // Get all users
-    const allUsers = Array.from((db as any).users.values());
-
-    // Filter users who have Ghana Cards but are not verified
-    const pendingUsers = allUsers.filter(
-      (user) =>
-        user.ghanaCard && user.ghanaCard.imageUrl && !user.ghanaCard.verified,
-    );
+    // Get users with pending Ghana Card verifications
+    const pendingUsers = await db.getPendingGhanaCardVerifications();
 
     const formattedUsers = pendingUsers.map((user) => ({
       id: user.id,
