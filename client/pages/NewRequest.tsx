@@ -205,17 +205,19 @@ export default function NewRequest() {
     try {
       const userId = localStorage.getItem("userId");
 
-      const response = await fetch(
-        `/api/requests/${createdRequest.id}/payment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-User-Id": userId!,
-          },
-          body: JSON.stringify({ paymentMethod }),
+      // Initialize payment with Paystack
+      const response = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": userId!,
         },
-      );
+        body: JSON.stringify({
+          requestId: createdRequest.id,
+          amount: createdRequest.amount,
+          paymentMethod,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
