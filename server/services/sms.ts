@@ -15,7 +15,7 @@ class SMSService {
 
   constructor() {
     this.apiKey =
-      process.env.SMS_API_KEY || "ea37f9e4-c06a-4eed-878a-8615178ff888";
+      process.env.SMS_API_KEY || "ea37f9e4-c06a-488d-878a-8615178ff888";
     this.baseUrl = "https://app.smsnotifygh.com/api";
   }
 
