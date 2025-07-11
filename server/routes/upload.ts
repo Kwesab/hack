@@ -176,9 +176,19 @@ export const verifyGhanaCard: RequestHandler = async (req, res) => {
 
     if (!user.ghanaCard) {
       console.log(`Ghana Card not found for user: ${userId}`);
+      console.log(`User details:`, {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        hasGhanaCard: !!user.ghanaCard,
+        ghanaCard: user.ghanaCard,
+      });
       return res.status(404).json({
         success: false,
         message: "Ghana Card not found for this user",
+        userId: userId,
+        userName: user.name,
+        userEmail: user.email,
       });
     }
 
