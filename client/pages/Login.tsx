@@ -113,6 +113,7 @@ export default function Login() {
           setIsNewUser(true);
           setStep("password");
         } else {
+          setIsNewUser(false);
           setStep("success");
           setTimeout(() => {
             navigate("/dashboard");
