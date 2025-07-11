@@ -59,6 +59,10 @@ export default function Dashboard() {
         },
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
       if (result.success) {
         setRecentRequests(result.requests.slice(0, 2)); // Show only 2 recent
