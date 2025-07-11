@@ -1,11 +1,12 @@
 // In-memory database simulation - In production, replace with actual database
 export interface User {
   id: string;
+  email: string;
   phone: string;
   name: string;
-  email?: string;
+  password: string;
+  role: "admin" | "student";
   studentId?: string;
-  password?: string;
   isVerified: boolean;
   ghanaCard?: {
     number: string;
