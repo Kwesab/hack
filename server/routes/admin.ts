@@ -41,7 +41,7 @@ export const getAllUsers: RequestHandler = async (req, res) => {
   try {
     // In a real implementation, you'd verify admin authentication here
 
-    const allUsers = Array.from((db as any).users.values());
+    const allUsers = await db.getAllUsers();
 
     const formattedUsers = allUsers.map((user) => ({
       id: user.id,
