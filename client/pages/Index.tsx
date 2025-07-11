@@ -756,6 +756,14 @@ export default function Index() {
                   🔧 Admin Dashboard (Test)
                 </Button>
               </Link>
+              <Link to="/diagrams">
+                <Button
+                  variant="outline"
+                  className="border-2 border-green-300/50 text-green-200 hover:bg-green-300/10 px-6 py-3 text-sm font-medium rounded-xl transition-all duration-300 w-full sm:w-auto"
+                >
+                  📊 System Diagrams
+                </Button>
+              </Link>
             </div>
 
             {/* Trust Indicators */}
