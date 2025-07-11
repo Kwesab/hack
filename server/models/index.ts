@@ -200,6 +200,22 @@ class Database {
       isVerified: true,
     });
 
+    // Create a student with unverified Ghana card for testing admin verification
+    this.createUser({
+      email: "test.student@student.ttu.edu.gh",
+      phone: "233503456789",
+      name: "Test Student",
+      password: "student123",
+      role: "student",
+      studentId: "TTU/CS/2022/003",
+      isVerified: true,
+      ghanaCard: {
+        number: "GHA-123456789-2",
+        imageUrl: "/uploads/test-ghana-card.jpg",
+        verified: false,
+      },
+    });
+
     // Create sample requests
     this.createRequest({
       userId: sampleUser.id,
