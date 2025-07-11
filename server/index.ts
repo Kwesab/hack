@@ -119,6 +119,11 @@ export function createServer() {
   app.get("/api/admin/users", getAllUsers);
   app.get("/api/admin/stats", getAdminStats);
 
+  // HOD routes
+  app.get("/api/requests/department", getDepartmentRequests);
+  app.post("/api/requests/:requestId/confirm", confirmRequest);
+  app.post("/api/requests/:requestId/reject", rejectRequest);
+
   // Upload routes
   app.post("/api/upload/ghana-card", uploadGhanaCard);
   app.post("/api/upload/documents/:requestId", uploadDocuments);
