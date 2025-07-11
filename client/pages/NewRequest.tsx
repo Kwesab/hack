@@ -619,8 +619,8 @@ export default function NewRequest() {
 
                 <div className="text-center">
                   <p className="text-muted-foreground mb-4">
-                    Click continue to submit your request. You'll be able to pay
-                    after submission.
+                    Click continue to submit your request and proceed to
+                    payment.
                   </p>
 
                   <Button
@@ -632,11 +632,11 @@ export default function NewRequest() {
                     {isSubmitting ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                        Submitting Request...
+                        Processing & Redirecting to Payment...
                       </>
                     ) : (
                       <>
-                        Submit Request
+                        Submit Request & Pay
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </>
                     )}
