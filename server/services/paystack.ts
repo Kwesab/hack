@@ -55,39 +55,78 @@ class PaystackService {
     callback_url?: string,
   ): Promise<PaystackInitializePaymentResponse> {
     try {
+      console.log("🔄 Initializing Paystack payment...");
+      console.log("📧 Email:", email);
+      console.log("💰 Amount:", amount, "GHS");
+      console.log("🔗 Reference:", reference);
+
+      // Convert amount to pesewas (multiply by 100)
+      const amountInPesewas = amount * 100;
+      console.log("💱 Amount in pesewas:", amountInPesewas);
+
+      const paymentData = {
+        email: email,
+        amount: amountInPesewas,
+        reference: reference,
+        callback_url:
+          callback_url ||
+          `${process.env.FRONTEND_URL || "http://localhost:8080"}/payment/callback`,
+        currency: "GHS",
+        metadata: {
+          document_request: reference,
+          service: "TTU DocPortal",
+          custom_fields: [
+            {
+              display_name: "Document Request",
+              variable_name: "document_request",
+              value: reference,
+            },
+          ],
+        },
+        channels: ["card", "mobile_money", "bank_transfer"],
+      };
+
+      console.log("📋 Payment payload:", JSON.stringify(paymentData, null, 2));
+
       const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          amount: amount * 100, // Paystack expects amount in kobo (pesewas)
-          reference,
-          callback_url:
-            callback_url || `${process.env.FRONTEND_URL}/payment/callback`,
-          metadata: {
-            custom_fields: [
-              {
-                display_name: "Document Request",
-                variable_name: "document_request",
-                value: reference,
-              },
-            ],
-          },
-        }),
+        body: JSON.stringify(paymentData),
       });
 
-      const data = await response.json();
+      console.log("📊 Paystack response status:", response.status);
+
+      const responseText = await response.text();
+      console.log("📄 Paystack response:", responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("❌ Failed to parse Paystack response:", parseError);
+        throw new Error("Invalid response from payment gateway");
+      }
 
       if (!response.ok) {
+        console.error("❌ Paystack error:", data);
         throw new Error(data.message || "Payment initialization failed");
       }
 
+      if (!data.status) {
+        console.error("❌ Paystack returned error:", data.message);
+        throw new Error(data.message || "Payment initialization failed");
+      }
+
+      console.log(
+        "✅ Payment initialized successfully:",
+        data.data.authorization_url,
+      );
       return data;
     } catch (error) {
-      console.error("Paystack initialize payment error:", error);
+      console.error("❌ Paystack initialize payment error:", error);
       throw error;
     }
   }
