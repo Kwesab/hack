@@ -32,33 +32,46 @@ export const generateAndDownloadDocument: RequestHandler = async (req, res) => {
       });
     }
 
-    // For demo purposes, we'll create a mock request
-    // In real implementation, fetch the actual request from database
-    const mockRequest = {
-      id: requestId,
-      userId,
-      type: "transcript" as const,
-      subType: "undergraduate",
-      status: "completed" as const,
-      isPaid: true,
-      createdAt: new Date(),
-    };
+    // Get the actual request from database
+    const requests = await db.getRequestsByUserId(userId);
+    const request = requests.find((req) => req.id === requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Document request not found",
+      });
+    }
 
     // Check if request belongs to user
-    if (mockRequest.userId !== userId) {
+    if (request.userId !== userId) {
       return res.status(403).json({
         success: false,
         message: "Access denied to this document",
       });
     }
 
-    // Check if request is completed and paid
-    if (mockRequest.status !== "completed" || !mockRequest.isPaid) {
+    // PAYMENT VERIFICATION: Check if request is paid before allowing document generation
+    if (!request.isPaid) {
+      return res.status(402).json({
+        success: false,
+        message:
+          "Payment required. Please complete payment before downloading your document.",
+        status: request.status,
+        isPaid: request.isPaid,
+        amount: request.amount,
+        requestId: request.id,
+      });
+    }
+
+    // Check if request is completed
+    if (request.status !== "completed" && request.status !== "ready") {
       return res.status(400).json({
         success: false,
-        message: "Document is not ready for download",
-        status: mockRequest.status,
-        isPaid: mockRequest.isPaid,
+        message:
+          "Document is not ready for download. Please wait for processing to complete.",
+        status: request.status,
+        isPaid: request.isPaid,
       });
     }
 
