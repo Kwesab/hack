@@ -122,16 +122,6 @@ class SMSService {
       };
     } else {
       console.log(`SMS failed to ${phone}, error: ${result.message}`);
-      // In development, still return success with OTP for testing
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Development mode: returning OTP ${otp} anyway`);
-        return {
-          success: true,
-          otp: otp,
-          message: "OTP generated (SMS service unavailable in dev mode)",
-        };
-      }
-
       return {
         success: false,
         message: result.message,
