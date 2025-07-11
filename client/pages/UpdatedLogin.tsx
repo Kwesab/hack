@@ -44,46 +44,30 @@ export default function UpdatedLogin() {
   const [nextStep, setNextStep] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Mock credentials for testing
+  // Verify credentials against database
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Mock verification - check against our test users
-      const testUsers = [
-        {
-          email: "admin@ttu.edu.gh",
-          password: "admin123",
-          name: "Admin User",
-          role: "admin",
-          phone: "233501111111",
+      // Make API call to verify credentials
+      const response = await fetch("/api/auth/verify-credentials", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          email: "john.doe@student.ttu.edu.gh",
-          password: "student123",
-          name: "John Doe",
-          role: "student",
-          phone: "233501234567",
-        },
-        {
-          email: "test.student@student.ttu.edu.gh",
-          password: "student123",
-          name: "Test Student",
-          role: "student",
-          phone: "233503456789",
-        },
-      ];
+        body: JSON.stringify({ email, password }),
+      });
 
-      const user = testUsers.find(
-        (u) => u.email === email && u.password === password,
-      );
+      const result = await response.json();
 
-      if (user) {
-        setUserInfo(user);
+      if (result.success && result.user) {
+        setUserInfo(result.user);
+        // Auto-set the phone number from database
+        setPhoneNumber(result.user.phone.replace("233", "").replace(/^0/, ""));
         setStep("phone");
       } else {
-        alert("Invalid email or password");
+        alert(result.message || "Invalid email or password");
       }
     } catch (error) {
       console.error("Credentials verification error:", error);
@@ -98,14 +82,10 @@ export default function UpdatedLogin() {
     setIsLoading(true);
 
     try {
-      // Verify phone matches user's registered phone
-      if (
-        phoneNumber.replace(/\s/g, "") !== userInfo.phone.replace("233", "")
-      ) {
-        alert("Phone number doesn't match our records");
-        setIsLoading(false);
-        return;
-      }
+      // Format the phone number for sending OTP
+      const formattedPhone = phoneNumber.startsWith("0")
+        ? phoneNumber
+        : "0" + phoneNumber;
 
       // Send OTP using existing endpoint
       const response = await fetch("/api/auth/send-otp", {
@@ -113,7 +93,7 @@ export default function UpdatedLogin() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ phone: phoneNumber }),
+        body: JSON.stringify({ phone: formattedPhone }),
       });
 
       const result = await response.json();
@@ -132,6 +112,11 @@ export default function UpdatedLogin() {
             return prev - 1;
           });
         }, 1000);
+
+        // Show the OTP in development for easy testing
+        if (result.otp) {
+          console.log(`🔑 OTP for ${formattedPhone}: ${result.otp}`);
+        }
       } else {
         alert(result.message || "Failed to send OTP");
       }
@@ -148,20 +133,25 @@ export default function UpdatedLogin() {
     setIsLoading(true);
 
     try {
+      // Format the phone number for verification
+      const formattedPhone = phoneNumber.startsWith("0")
+        ? phoneNumber
+        : "0" + phoneNumber;
+
       // Verify OTP using existing endpoint
       const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ phone: phoneNumber, otp }),
+        body: JSON.stringify({ phone: formattedPhone, otp }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        // Store user info
-        localStorage.setItem("userId", result.user.id);
+        // Store user info from the database user
+        localStorage.setItem("userId", userInfo.id);
         localStorage.setItem("userEmail", userInfo.email);
         localStorage.setItem("userName", userInfo.name);
         localStorage.setItem("userRole", userInfo.role);
@@ -393,11 +383,7 @@ export default function UpdatedLogin() {
                       <strong>Admin:</strong> admin@ttu.edu.gh / admin123
                     </p>
                     <p>
-                      <strong>Student:</strong> john.doe@student.ttu.edu.gh /
-                      student123
-                    </p>
-                    <p>
-                      <strong>Test Student:</strong>{" "}
+                      <strong>Students:</strong> john.doe@student.ttu.edu.gh,
                       test.student@student.ttu.edu.gh / student123
                     </p>
                   </div>
@@ -427,8 +413,7 @@ export default function UpdatedLogin() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Phone numbers: Admin (50 111 1111), John (50 123 4567), Test
-                    (50 345 6789)
+                    Phone number auto-filled from your account
                   </p>
                 </div>
 
@@ -482,7 +467,7 @@ export default function UpdatedLogin() {
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground">
-                      Check server logs for OTP code
+                      OTP sent to your phone number
                     </p>
                   )}
                 </div>
