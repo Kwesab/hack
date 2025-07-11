@@ -50,11 +50,15 @@ export const createRequest: RequestHandler = async (req, res) => {
 
     const request = db.createRequest({
       userId,
+      type: requestData.type,
+      subType: requestData.subType || "",
+      deliveryMethod: requestData.deliveryMethod,
+      deliveryAddress: requestData.deliveryAddress,
+      notes: requestData.notes,
       status: "pending",
       amount: amounts[requestData.type],
       isPaid: false,
       documents: [],
-      ...requestData,
     });
 
     // Send SMS notification
