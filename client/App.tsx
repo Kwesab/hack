@@ -15,6 +15,8 @@ import TrackRequests from "./pages/TrackRequests";
 import AdminDashboard from "./pages/AdminDashboard";
 import TestOTP from "./pages/TestOTP";
 import ApiTest from "./pages/ApiTest";
+import NewLogin from "./pages/NewLogin";
+import UploadGhanaCard from "./pages/UploadGhanaCard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
