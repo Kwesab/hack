@@ -426,6 +426,7 @@ export default function TrackRequests() {
                           <Button
                             size="sm"
                             className="bg-success hover:bg-success/90"
+                            onClick={() => handleDownload(request.id)}
                           >
                             <Download className="h-4 w-4 mr-2" />
                             Download
