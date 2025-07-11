@@ -291,6 +291,314 @@ class PDFGeneratorService {
         throw new Error(`Unsupported document type: ${documentType}`);
     }
   }
+
+  // Helper methods for generating realistic data
+  private generateCoursesByDepartment(department: string, level: string) {
+    const courseSets = {
+      "Computer Science": [
+        {
+          code: "CS101",
+          title: "Introduction to Programming",
+          credits: 3,
+          grade: "A",
+          points: 12.0,
+        },
+        {
+          code: "MATH101",
+          title: "Calculus for Computing",
+          credits: 3,
+          grade: "B+",
+          points: 9.9,
+        },
+        {
+          code: "CS102",
+          title: "Object-Oriented Programming",
+          credits: 3,
+          grade: "A-",
+          points: 11.1,
+        },
+        {
+          code: "CS201",
+          title: "Data Structures & Algorithms",
+          credits: 4,
+          grade: "A",
+          points: 16.0,
+        },
+        {
+          code: "CS202",
+          title: "Computer Networks",
+          credits: 3,
+          grade: "B+",
+          points: 9.9,
+        },
+        {
+          code: "CS301",
+          title: "Database Systems",
+          credits: 4,
+          grade: "A",
+          points: 16.0,
+        },
+        {
+          code: "CS302",
+          title: "Software Engineering",
+          credits: 4,
+          grade: "A-",
+          points: 14.8,
+        },
+        {
+          code: "CS401",
+          title: "Final Year Project",
+          credits: 6,
+          grade: "A",
+          points: 24.0,
+        },
+        {
+          code: "ENG101",
+          title: "Technical Communication",
+          credits: 2,
+          grade: "B+",
+          points: 6.6,
+        },
+        {
+          code: "MATH201",
+          title: "Discrete Mathematics",
+          credits: 3,
+          grade: "B",
+          points: 9.0,
+        },
+      ],
+      "Electrical Engineering": [
+        {
+          code: "EE101",
+          title: "Circuit Analysis I",
+          credits: 4,
+          grade: "A",
+          points: 16.0,
+        },
+        {
+          code: "MATH101",
+          title: "Engineering Mathematics I",
+          credits: 3,
+          grade: "B+",
+          points: 9.9,
+        },
+        {
+          code: "EE102",
+          title: "Digital Electronics",
+          credits: 3,
+          grade: "A-",
+          points: 11.1,
+        },
+        {
+          code: "EE201",
+          title: "Power Systems Engineering",
+          credits: 4,
+          grade: "B+",
+          points: 13.2,
+        },
+        {
+          code: "EE202",
+          title: "Electromagnetic Fields",
+          credits: 3,
+          grade: "B",
+          points: 9.0,
+        },
+        {
+          code: "EE301",
+          title: "Control Systems",
+          credits: 4,
+          grade: "A",
+          points: 16.0,
+        },
+        {
+          code: "EE302",
+          title: "Microprocessor Systems",
+          credits: 3,
+          grade: "A-",
+          points: 11.1,
+        },
+        {
+          code: "EE401",
+          title: "Final Year Project",
+          credits: 6,
+          grade: "A",
+          points: 24.0,
+        },
+        {
+          code: "ENG101",
+          title: "Technical Writing",
+          credits: 2,
+          grade: "B+",
+          points: 6.6,
+        },
+        {
+          code: "MATH201",
+          title: "Advanced Engineering Math",
+          credits: 3,
+          grade: "B",
+          points: 9.0,
+        },
+      ],
+      "Mechanical Engineering": [
+        {
+          code: "ME101",
+          title: "Engineering Mechanics",
+          credits: 4,
+          grade: "A",
+          points: 16.0,
+        },
+        {
+          code: "MATH101",
+          title: "Engineering Mathematics",
+          credits: 3,
+          grade: "B+",
+          points: 9.9,
+        },
+        {
+          code: "ME102",
+          title: "Thermodynamics I",
+          credits: 3,
+          grade: "A-",
+          points: 11.1,
+        },
+        {
+          code: "ME201",
+          title: "Fluid Mechanics",
+          credits: 4,
+          grade: "B+",
+          points: 13.2,
+        },
+        {
+          code: "ME202",
+          title: "Materials Science",
+          credits: 3,
+          grade: "B",
+          points: 9.0,
+        },
+        {
+          code: "ME301",
+          title: "Machine Design",
+          credits: 4,
+          grade: "A",
+          points: 16.0,
+        },
+        {
+          code: "ME302",
+          title: "Manufacturing Processes",
+          credits: 3,
+          grade: "A-",
+          points: 11.1,
+        },
+        {
+          code: "ME401",
+          title: "Final Year Project",
+          credits: 6,
+          grade: "A",
+          points: 24.0,
+        },
+        {
+          code: "ENG101",
+          title: "Technical Communication",
+          credits: 2,
+          grade: "B+",
+          points: 6.6,
+        },
+        {
+          code: "MATH201",
+          title: "Advanced Mathematics",
+          credits: 3,
+          grade: "B",
+          points: 9.0,
+        },
+      ],
+    };
+
+    return courseSets[department] || courseSets["Computer Science"];
+  }
+
+  private generateDegreeTitle(department: string, level: string): string {
+    const degreeTitles = {
+      "Computer Science": {
+        undergraduate: "Bachelor of Technology in Computer Science",
+        postgraduate: "Master of Science in Computer Science",
+        diploma: "Higher National Diploma in Computer Science",
+      },
+      "Electrical Engineering": {
+        undergraduate: "Bachelor of Engineering in Electrical Engineering",
+        postgraduate: "Master of Engineering in Electrical Engineering",
+        diploma: "Higher National Diploma in Electrical Engineering",
+      },
+      "Mechanical Engineering": {
+        undergraduate: "Bachelor of Engineering in Mechanical Engineering",
+        postgraduate: "Master of Engineering in Mechanical Engineering",
+        diploma: "Higher National Diploma in Mechanical Engineering",
+      },
+    };
+
+    return (
+      degreeTitles[department]?.[level] ||
+      `Bachelor of Technology in ${department}`
+    );
+  }
+
+  private getClassification(gpa?: string): string {
+    const gpaNum = parseFloat(gpa || "3.5");
+    if (gpaNum >= 3.7) return "First Class Honours";
+    if (gpaNum >= 3.3) return "Second Class Upper Division";
+    if (gpaNum >= 2.7) return "Second Class Lower Division";
+    if (gpaNum >= 2.0) return "Third Class";
+    return "Pass";
+  }
+
+  private calculateTotalCredits(department?: string): number {
+    // Standard credit hours for different programs
+    return department?.includes("Engineering") ? 140 : 130;
+  }
+
+  private generateStudyPeriod(studentId: string, level: string): string {
+    const yearMatch = studentId.match(/\/(\d{4})\//);
+    const entranceYear = yearMatch
+      ? parseInt(yearMatch[1])
+      : new Date().getFullYear() - 4;
+    const duration = level === "postgraduate" ? 2 : 4;
+    const graduationYear = entranceYear + duration;
+    return `September ${entranceYear} - June ${graduationYear}`;
+  }
+
+  private generateGraduationDate(studentId: string): string {
+    const yearMatch = studentId.match(/\/(\d{4})\//);
+    const entranceYear = yearMatch
+      ? parseInt(yearMatch[1])
+      : new Date().getFullYear() - 4;
+    const graduationYear = entranceYear + 4; // Assuming 4-year program
+    return `June ${graduationYear}`;
+  }
+
+  private generateGPA(studentId: string): string {
+    // Generate consistent GPA based on student ID
+    const hash = this.simpleHash(studentId);
+    const gpaOptions = [
+      "3.85",
+      "3.67",
+      "3.45",
+      "3.78",
+      "3.56",
+      "3.92",
+      "3.34",
+      "3.71",
+    ];
+    return gpaOptions[hash % gpaOptions.length];
+  }
+
+  private simpleHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  }
 }
 
 export const pdfGeneratorService = new PDFGeneratorService();
