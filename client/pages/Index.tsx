@@ -59,9 +59,11 @@ export default function Index() {
             >
               Support
             </a>
-            <Button variant="outline" className="ml-4">
-              Login
-            </Button>
+            <Link to="/login">
+              <Button variant="outline" className="ml-4">
+                Login
+              </Button>
+            </Link>
           </nav>
         </div>
       </header>
