@@ -85,15 +85,29 @@ class SMSService {
 
     const message = `Your TTU DocPortal verification code is: ${otp}. This code expires in 10 minutes. Do not share this code with anyone.`;
 
+    console.log(`Attempting to send OTP ${otp} to ${phone}`);
+
     const result = await this.sendSMS({ to: phone, message });
 
     if (result.success) {
+      console.log(`SMS sent successfully to ${phone}`);
       return {
         success: true,
         otp: otp,
         message: "OTP sent successfully",
       };
     } else {
+      console.log(`SMS failed to ${phone}, error: ${result.message}`);
+      // In development, still return success with OTP for testing
+      if (process.env.NODE_ENV === "development") {
+        console.log(`Development mode: returning OTP ${otp} anyway`);
+        return {
+          success: true,
+          otp: otp,
+          message: "OTP generated (SMS service unavailable in dev mode)",
+        };
+      }
+
       return {
         success: false,
         message: result.message,
