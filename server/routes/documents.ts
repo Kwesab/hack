@@ -75,6 +75,7 @@ export const createRequest: RequestHandler = async (req, res) => {
 
     const request = await db.createRequest({
       userId,
+      userDepartment: user.department,
       type: requestData.type,
       subType: requestData.subType || "",
       deliveryMethod: requestData.deliveryMethod,
